@@ -1,7 +1,7 @@
 # KCTG Atelier - Full Tutorial
 
 > [!NOTE]
-> **AI disclosure:** This Module was written with the assistance of AI (Anthropic's Claude), working from the module's actual source code and templates. The module's code itself was also developed with AI assistance. The content has been reviewed against the live module, but if you spot anything that no longer matches the current version, please open an issue.
+> **AI disclosure:** This Module was written with AI for the module's actual source code and templates, this has been developed mainly for my own campaign, and this aimed to be use personally. The module's code itself was also developed with AI assistance. The content has been reviewed against the live module, but if you spot anything that no longer matches the current version, please open an issue.
 
 KCTG Atelier is a Foundry VTT (v14) module that bundles five connected campaign tools:
 
