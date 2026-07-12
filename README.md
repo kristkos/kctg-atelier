@@ -1,7 +1,7 @@
 # KCTG Atelier - Full Tutorial
 
 > [!NOTE]
-> **AI disclosure:** This Module was written with AI for the module's actual source code and templates, this has been developed mainly for my own campaign, and this aimed to be use personally. The module's code itself was also developed with AI assistance. The content has been reviewed against the live module, but if you spot anything that no longer matches the current version, please open an issue.
+> **AI disclosure:** This Module was written with AI, and it is aimed for my own personal campaign of PF2e's Kingmaker, for the module's actual source code and templates, this has been developed mainly for my own campaign, and this aimed to be use personally. The module's code itself was also developed with AI assistance. The content has been reviewed against the live module, but if you spot anything that no longer matches the current version, please open an issue.
 
 KCTG Atelier is a Foundry VTT (v14) module that bundles five connected campaign tools:
 
@@ -16,6 +16,9 @@ KCTG Atelier is a Foundry VTT (v14) module that bundles five connected campaign 
 It is system-agnostic and has been verified on **PF2e** and **D&D 5e**. All five tools share one workshop day clock, so advancing a single day moves tasks, crafts, deadlines, and merchant restocks together.
 
 ---
+## Instalation
+
+Paste into the Manifest URL tab `https://raw.githubusercontent.com/kristkos/kctg-atelier/main/module.json` and hit Install
 
 ## Table of Contents
 
