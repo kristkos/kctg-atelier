@@ -1,10 +1,9 @@
 {
   "id": "kctg-atelier",
-  "title": "KCTG Atelier",
+  "title": "Kris' Compendium of Trade Goods Atelier",
   "description": "Combined KCTG module: Forge crafting, Quest tracker, and Workshop manager.",
-  "version": "1.0.0",
-  "compatibility": { "minimum": "14", "verified": "14", "maximum": "14" },
-  "authors": [{ "name": "kristkos" }],
+  "version": "0.0.1",
+  "compatibility": { "minimum": "14", "verified": "14.363", "maximum": "14" },
   "esmodules": [
     "scripts/forge.mjs",
     "scripts/quests.mjs",
@@ -22,5 +21,16 @@
   ],
   "socket": true,
   "languages": [],
+   "authors": [
+    {
+      "name": "kristkos",
+      "discord": "kristkos",
+      "url": "https://patreon.com/KCTG",
+      "flags": {}
+    }
+  ],
+  "url": "https://github.com/kristkos/kctg-atelier",
+  "download": "https://github.com/kristkos/kctg-atelier/releases/download/0.0.1/kctg-atelier.zip",
+  "manifest": "https://raw.githubusercontent.com/kristkos/kctg-atelier/main/module.json",
   "flags": {}
 }

@@ -377,6 +377,46 @@ async function _applySellToMerchant(merchantActor, itemData, qty) {
   }
 }
 
+// ─── STOCK ITEM DROP (GM stocking) ───────────────────────────────────────────
+// Drag an Item document (compendium, sidebar, or another sheet) onto a category
+// section of the Stock Tables / Inventory tabs to add it as merchant stock.
+// Owner-gated: stocking writes the merchant actor directly (no socket path).
+async function _handleStockItemDrop(merchantActor, uuid, catId, app) {
+  if (!merchantActor?.isOwner) return;
+  const item = await safeFromUuid(uuid);
+  if (!item || item.documentName !== "Item") return;
+  if (!isPhysicalItem(item))
+    return ui.notifications.warn(`"${item.name}" is not a physical item and can't be sold as stock.`);
+
+  const qty = await foundry.applications.api.DialogV2.prompt({
+    window: { title: `Stock — ${item.name}` },
+    content: `
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 2px;">
+        <img src="${esc(item.img ?? "icons/svg/item-bag.svg")}" onerror="this.src='icons/svg/item-bag.svg'"
+             style="width:40px;height:40px;border-radius:5px;object-fit:cover;border:1px solid rgba(255,255,255,.15);" />
+        <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;">Quantity:
+          <input type="number" name="qty" value="${Math.max(1, getItemQty(item) ?? 1)}" min="1"
+                 style="width:64px;text-align:center;padding:3px 6px;" />
+        </label>
+      </div>`,
+    ok: {
+      icon: "fas fa-box-open", label: "Add to Stock",
+      callback: (_e, btn) => Math.max(1, parseInt(btn.form.elements.qty.value) || 1),
+    },
+  }).catch(() => null);
+  if (!qty) return;
+
+  const added = await addItemToActor(merchantActor, item, qty);
+  if (!added) return ui.notifications.error(`Could not add "${item.name}" to ${merchantActor.name}.`);
+  if (catId) {
+    const d = getMerchantData(merchantActor);
+    d.itemCategories[added.id] = catId;
+    await saveMerchantData(merchantActor, d);
+  }
+  ui.notifications.info(`Stocked ${qty}× ${item.name}.`);
+  app?.render();
+}
+
 // ─── BUY FLOW ─────────────────────────────────────────────────────────────────
 
 async function _handleBuy(merchantActor, itemId, app) {
@@ -1294,6 +1334,9 @@ class MerchantsApp extends foundry.applications.api.HandlebarsApplicationMixin(
       section.addEventListener("drop", async e => {
         e.preventDefault(); section.classList.remove("kctg-drag-over");
         let data; try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
+        // External Item drag (compendium / sidebar / sheet) → add as stock in this category
+        if (data.type === "Item" && data.uuid)
+          return _handleStockItemDrop(act(), data.uuid, section.dataset.catId || null, this);
         if (data.type !== "kctg-items") return;
         const catId = section.dataset.catId || null;
         const d = getMerchantData(act());
