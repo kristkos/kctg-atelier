@@ -1,0 +1,241 @@
+<div class="kctg-app kctg-craft-inner">
+
+  {{!-- Actor selector --}}
+  <div class="kctg-actor-bar">
+    <label class="kctg-label">Character</label>
+    <select class="kctg-actor-select kctg-select">
+      <option value="">— Select a character —</option>
+      {{#if selectedOrphan}}
+        <option value="{{selectedOrphan.id}}" selected>{{selectedOrphan.name}}</option>
+      {{/if}}
+      {{#each ownActors}}
+        <option value="{{id}}" {{#if (eq id ../actor.id)}}selected{{/if}}>{{name}}</option>
+      {{/each}}
+      {{#if activeActors.length}}
+        <optgroup label="── Crafting Now ──">
+          {{#each activeActors}}
+            <option value="{{id}}" {{#if (eq id ../actor.id)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </optgroup>
+      {{/if}}
+      {{#if rosterActors.length}}
+        <optgroup label="── Crafters ──">
+          {{#each rosterActors}}
+            <option value="{{id}}" {{#if (eq id ../actor.id)}}selected{{/if}}>{{name}}</option>
+          {{/each}}
+        </optgroup>
+      {{/if}}
+    </select>
+    {{#if actor}}<img class="kctg-actor-img" src="{{actor.img}}" alt="{{actor.name}}" />{{/if}}
+    {{#if isGM}}
+      <button class="kctg-open-recipe-manager-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button">Recipe Manager</button>
+    {{else if canPersonal}}
+      <button class="kctg-manage-personal-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button">My Recipes</button>
+    {{/if}}
+  </div>
+
+  {{!-- GM roster bar: drop zone + one manage button. Saved crafters live in the
+       dropdown; removal happens in the Manage Crafters dialog. --}}
+  {{#if isGM}}
+  <div class="kctg-npc-bar">
+    <div class="kctg-npc-actor-drop kctg-drop-zone kctg-drop-zone--sm" title="Add an actor to the crafter list. NPCs and player characters both work.">
+      <i class="fas fa-user-plus"></i> Drop an actor to add
+    </div>
+    {{#if rosterActors.length}}
+      <button class="kctg-roster-manage kctg-btn kctg-btn-outline kctg-btn-xs" type="button" title="Remove actors from the crafter list">
+        <i class="fas fa-users-gear"></i> Manage Crafters
+      </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  <div class="kctg-craft-layout">
+
+    {{!-- Recipe list --}}
+    <div class="kctg-recipe-list-panel">
+      <div class="kctg-tab-bar kctg-recipe-tab-bar">
+        <button class="kctg-tab-btn kctg-recipe-tab {{#if (eq listTab 'world')}}kctg-tab-active{{/if}}" data-tab="world" type="button">
+          <i class="fas fa-globe"></i> World
+        </button>
+        {{#if canPersonal}}
+          <button class="kctg-tab-btn kctg-recipe-tab {{#if (eq listTab 'personal')}}kctg-tab-active{{/if}}" data-tab="personal" type="button">
+            <i class="fas fa-user"></i> Personal
+          </button>
+        {{/if}}
+      </div>
+      <ul class="kctg-recipe-list">
+        {{#each listItems}}
+          {{#if isFolder}}
+            <li class="kctg-group-row" data-folder-id="{{id}}"
+                style="--group-color:{{#if color}}{{color}}{{else}}var(--kctg-russet){{/if}}" title="Right-click to edit">
+              <div class="kctg-group-main" title="Click to collapse / expand">
+                <i class="fas {{#if collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} kctg-group-chevron"></i>
+                <span class="kctg-group-name">{{name}}</span>
+                <span class="kctg-group-line"></span>
+                <span class="kctg-group-count">{{count}}</span>
+              </div>
+            </li>
+          {{else}}
+            <li class="kctg-recipe-entry {{#if inFolder}}kctg-recipe-indented{{/if}} {{#if (eq id ../selectedId)}}kctg-selected{{/if}} {{#if locked}}kctg-recipe-locked{{/if}}" data-id="{{id}}">
+              {{#if locked}}<span class="kctg-lock-dot" title="Locked"></span>{{else}}{{#if _dot}}<span class="kctg-ownership-dot kctg-ownership-dot--{{_dot}}" title="{{#if (eq _dot 'green')}}All ingredients available{{else if (eq _dot 'yellow')}}Some ingredients available{{else}}No ingredients available{{/if}}"></span>{{/if}}{{/if}}
+              <span class="kctg-recipe-name">{{name}}</span>
+            </li>
+          {{/if}}
+        {{else}}
+          <li class="kctg-empty-state kctg-empty-sm"><p>{{#if (eq listTab 'personal')}}No personal recipes yet.{{else}}No recipes yet.{{/if}}</p></li>
+        {{/each}}
+      </ul>
+    </div>
+
+    {{!-- Recipe detail --}}
+    <div class="kctg-recipe-detail">
+
+      {{!-- Timed crafts: in progress + ready to collect --}}
+      {{#if hasCraftJobs}}
+      <div class="kctg-craft-queue">
+        {{#if collectJobs.length}}
+        <div class="kctg-craft-queue-section">
+          <div class="kctg-craft-queue-title"><i class="fas fa-box-open"></i> Ready to Collect</div>
+          {{#each collectJobs}}
+          <div class="kctg-craft-job kctg-craft-job--{{#if isFailed}}failed{{else}}ready{{/if}}">
+            <div class="kctg-craft-job-main">
+              <span class="kctg-craft-job-name">{{recipeName}}{{#if (gt qty 1)}} ×{{qty}}{{/if}}</span>
+              <span class="kctg-craft-job-actor">{{actorName}}</span>
+            </div>
+            {{#if isFailed}}
+              <span class="kctg-craft-job-fail" title="{{failReason}}"><i class="fas fa-exclamation-triangle"></i> Failed</span>
+              <button class="kctg-craft-cancel kctg-btn kctg-btn-outline kctg-btn-xs" type="button" data-id="{{id}}">Dismiss</button>
+            {{else}}
+              <button class="kctg-craft-collect kctg-btn kctg-btn-gold kctg-btn-xs" type="button" data-id="{{id}}"><i class="fas fa-hand-holding"></i> Collect</button>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{#if inProgressJobs.length}}
+        <div class="kctg-craft-queue-section">
+          <div class="kctg-craft-queue-title"><i class="fas fa-hammer"></i> In Progress</div>
+          {{#each inProgressJobs}}
+          <div class="kctg-craft-job kctg-craft-job--active">
+            <div class="kctg-craft-job-main">
+              <span class="kctg-craft-job-name">{{recipeName}}{{#if (gt qty 1)}} ×{{qty}}{{/if}}</span>
+              <span class="kctg-craft-job-days">{{daysLeft}} day{{#unless (eq daysLeft 1)}}s{{/unless}} left</span>
+            </div>
+            <div class="kctg-craft-job-bar"><div class="kctg-craft-job-fill" style="width:{{progressPct}}%;"></div></div>
+            <button class="kctg-craft-cancel kctg-btn kctg-btn-outline kctg-btn-xs" type="button" data-id="{{id}}" title="Cancel this craft (no ingredients were consumed yet)"><i class="fas fa-times"></i></button>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+      {{/if}}
+
+      {{#if selected}}
+
+        <div class="kctg-recipe-header-row">
+          <div class="kctg-recipe-title">{{selected.name}}</div>
+          {{#if selected.locked}}<span class="kctg-locked-badge">Locked</span>{{/if}}
+        </div>
+        {{#if selected.description}}<p class="kctg-recipe-desc">{{selected.description}}</p>{{/if}}
+
+        {{!-- Prerequisites --}}
+        {{#if enrichedPrereqs.length}}
+          <div class="kctg-panel-header">Required Tools</div>
+          <ul class="kctg-ingredient-list">
+            {{#each enrichedPrereqs}}
+              <li class="kctg-ingredient-row {{#unless has}}kctg-missing{{/unless}}">
+                <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                <span class="kctg-item-name">{{resolvedName}}</span>
+                <span class="kctg-prereq-tag">NOT CONSUMED</span>
+              </li>
+            {{/each}}
+          </ul>
+        {{/if}}
+
+        <div class="kctg-panel-header">Ingredients</div>
+        {{#if enrichedIngredients.length}}
+          <ul class="kctg-ingredient-list">
+            {{#each enrichedIngredients}}
+              <li class="kctg-ingredient-block {{#unless has}}kctg-missing{{/unless}}">
+                <div class="kctg-ingredient-row">
+                  <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                  <span class="kctg-item-name">{{resolvedName}}</span>
+                  <span class="kctg-item-qty">×{{needed}}</span>
+                </div>
+                {{#if visibleDescs.length}}
+                  <div class="kctg-ing-descs">
+                    {{#each visibleDescs}}
+                      <span class="kctg-desc-text kctg-desc-text--{{type}}"><span class="kctg-desc-label">{{label}}:</span> {{value}}</span>
+                    {{/each}}
+                  </div>
+                {{/if}}
+              </li>
+            {{/each}}
+          </ul>
+        {{else}}<p class="kctg-subtle">No ingredients.</p>{{/if}}
+
+        <div class="kctg-panel-header">Produces</div>
+        {{#if enrichedResults.length}}
+          <ul class="kctg-ingredient-list">
+            {{#each enrichedResults}}
+              <li class="kctg-ingredient-row">
+                <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                <span class="kctg-item-name">{{resolvedName}}</span>
+                <span class="kctg-item-qty">×{{total}}</span>
+              </li>
+            {{/each}}
+          </ul>
+        {{else}}<p class="kctg-subtle">This recipe has no result items yet.</p>{{/if}}
+
+        {{#if (or aggregatedPrimary.length aggregatedSecondary.length)}}
+          <div class="kctg-result-descriptors">
+            {{#each aggregatedPrimary}}<div class="kctg-desc-text kctg-desc-text--primary"><span class="kctg-desc-label">{{label}}:</span> {{value}}</div>{{/each}}
+            {{#each aggregatedSecondary}}<div class="kctg-desc-text kctg-desc-text--secondary"><span class="kctg-desc-label">{{label}}:</span> {{value}}</div>{{/each}}
+          </div>
+        {{/if}}
+
+        {{!-- Quantity + Craft buttons --}}
+        <div class="kctg-craft-controls">
+          <div class="kctg-qty-row">
+            <label class="kctg-label">Quantity</label>
+            <input class="kctg-craft-qty kctg-input-qty" type="number" min="1" max="99" value="{{craftQty}}" />
+          </div>
+          <div class="kctg-craft-action-row">
+            {{#if (eq approvalState 'needed')}}
+              <button class="kctg-request-approval-btn kctg-btn kctg-btn-gold kctg-btn-wide" type="button" {{#unless canCraft}}disabled{{/unless}}>
+                {{#if canCraft}}<i class="fas fa-paper-plane"></i> Request GM Approval{{else}}Missing Ingredients{{/if}}
+              </button>
+            {{else if (eq approvalState 'pending')}}
+              <button class="kctg-btn kctg-btn-wide" type="button" disabled style="opacity:.6;cursor:default;">
+                <i class="fas fa-hourglass-half"></i> Awaiting GM Approval…
+              </button>
+            {{else}}
+              <button class="kctg-craft-btn kctg-btn kctg-btn-gold kctg-btn-wide" type="button" {{#unless canCraft}}disabled{{/unless}}>
+                {{#if crafting}}Crafting…
+                {{else if canCraft}}{{#if selectedIsTimed}}<i class="fas fa-hourglass-start" style="margin-right:4px;"></i>Begin Craft{{else}}Craft{{/if}} {{selected.name}}{{#if (gt craftQty 1)}} ×{{craftQty}}{{/if}}
+                {{else}}Missing Ingredients{{/if}}
+              </button>
+            {{/if}}
+            {{#if selectedIsTimed}}
+              <div class="kctg-craft-time-note" style="font-size:.78em;opacity:.7;text-align:center;margin-top:2px;">
+                <i class="fas fa-clock"></i> Takes {{selectedCraftDays}} day{{#unless (eq selectedCraftDays 1)}}s{{/unless}}. Ingredients consumed on completion.
+              </div>
+            {{/if}}
+            {{#if canForceCraft}}
+              <div class="kctg-craft-override-row">
+                <button class="kctg-force-craft-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="Consume whatever the actor has, skip the rest">Force Craft</button>
+                <button class="kctg-free-craft-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="Skip all ingredient consumption, grant results directly">Free Craft</button>
+              </div>
+            {{/if}}
+          </div>
+        </div>
+
+      {{else}}
+        <div class="kctg-empty-state">
+          <p>Select a recipe to view and craft.</p>
+        </div>
+      {{/if}}
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,83 @@
+<div class="kctg-app kctg-loc-edit-app">
+
+  {{!-- Icon + Name row --}}
+  <div class="kctg-loc-header-row">
+    <button class="kctg-loc-icon-btn kctg-btn kctg-btn-outline"
+            data-id="{{loc.id}}" type="button" title="Click to change icon">
+      <img src="{{loc.icon}}" alt="" onerror="this.src='icons/svg/village.svg'" />
+    </button>
+    <input class="kctg-loc-name-input kctg-input" type="text" value="{{loc.name}}"
+           data-id="{{loc.id}}" placeholder="Location name" />
+  </div>
+
+  {{!-- Scale --}}
+  <div class="kctg-color-row">
+    <span class="kctg-color-lbl">Scale</span>
+    <input class="kctg-loc-scale" type="range" min="0.3" max="5" step="0.1" value="{{loc.scale}}" style="flex:1;" />
+    <span class="kctg-loc-scale-val">{{loc.scale}}×</span>
+  </div>
+
+  {{!-- Color customization --}}
+  <div class="kctg-loc-colors">
+    <div class="kctg-color-row">
+      <span class="kctg-color-lbl">Tint</span>
+      <input class="kctg-color-swatch" type="color" value="{{tintColorSwatch}}" data-field="tintColor" />
+      <input class="kctg-color-hex kctg-input" type="text" value="{{loc.tintColor}}" maxlength="7" placeholder="none" data-field="tintColor" />
+      <button class="kctg-color-clear kctg-btn kctg-btn-xs kctg-btn-outline" data-field="tintColor" type="button" title="Reset to default">×</button>
+    </div>
+    <div class="kctg-color-row">
+      <span class="kctg-color-lbl">BG</span>
+      <input class="kctg-color-swatch" type="color" value="{{bgColorSwatch}}" data-field="bgColor" />
+      <input class="kctg-color-hex kctg-input" type="text" value="{{loc.bgColor}}" maxlength="7" placeholder="#141414" data-field="bgColor" />
+      <button class="kctg-color-clear kctg-btn kctg-btn-xs kctg-btn-outline" data-field="bgColor" type="button" title="Reset to default">×</button>
+    </div>
+    <div class="kctg-color-row">
+      <span class="kctg-color-lbl">Rim</span>
+      <input class="kctg-color-swatch" type="color" value="{{rimColorSwatch}}" data-field="rimColor" />
+      <input class="kctg-color-hex kctg-input" type="text" value="{{loc.rimColor}}" maxlength="7" placeholder="#f5b430" data-field="rimColor" />
+      <button class="kctg-color-clear kctg-btn kctg-btn-xs kctg-btn-outline" data-field="rimColor" type="button" title="Reset to default">×</button>
+    </div>
+    {{#if isHome}}
+    <div class="kctg-color-row">
+      <span class="kctg-color-lbl">Glow</span>
+      <input class="kctg-color-swatch" type="color" value="{{glowColorSwatch}}" data-field="glowColor" />
+      <input class="kctg-color-hex kctg-input" type="text" value="{{loc.glowColor}}" maxlength="7" placeholder="#f5b430" data-field="glowColor" />
+      <button class="kctg-color-clear kctg-btn kctg-btn-xs kctg-btn-outline" data-field="glowColor" type="button" title="Reset to default">×</button>
+    </div>
+    {{/if}}
+  </div>
+
+  {{!-- Linked Quest --}}
+  <div class="kctg-loc-section">
+    <span class="kctg-label"><i class="fas fa-scroll"></i> Linked Quest</span>
+    <div class="kctg-loc-quest-slot kctg-drop-zone" style="padding:5px 8px;justify-content:flex-start;gap:7px;margin-top:4px;">
+      {{#if loc.linkedQuestName}}
+        <i class="fas fa-scroll" style="color:var(--kctg-amber);"></i>
+        <span style="flex:1;font-size:.8rem;">{{loc.linkedQuestName}}</span>
+        <button class="kctg-loc-quest-clear kctg-btn kctg-btn-xs kctg-btn-danger" type="button"><i class="fas fa-times"></i></button>
+      {{else}}
+        <i class="fas fa-scroll kctg-dim"></i>
+        <span class="kctg-hint kctg-dim" style="font-size:.75rem;">Drop a Quest page to show its status on the map</span>
+      {{/if}}
+    </div>
+  </div>
+
+  {{!-- Set Home + Delete --}}
+  <div class="kctg-loc-actions">
+    <button class="kctg-loc-home-btn kctg-btn kctg-btn-sm {{#if isHome}}kctg-btn-gold{{else}}kctg-btn-outline{{/if}}"
+            data-id="{{loc.id}}" type="button" title="Toggle as Workshop Home location">
+      <i class="fas fa-home"></i> {{#if isHome}}Home ✓{{else}}Set Home{{/if}}
+    </button>
+    <div style="flex:1;"></div>
+    <button class="kctg-loc-delete kctg-btn kctg-btn-sm kctg-btn-danger"
+            data-id="{{loc.id}}" type="button" title="Delete this location">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  {{!-- Save (commits all edits with a single settings write) --}}
+  <button class="kctg-loc-save-btn kctg-btn kctg-btn-gold kctg-btn-wide" type="button">
+    <i class="fas fa-save"></i> Save
+  </button>
+
+</div>

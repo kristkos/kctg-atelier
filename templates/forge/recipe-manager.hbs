@@ -1,0 +1,437 @@
+<div class="kctg-app kctg-rm-inner">
+
+  {{!-- Source tabs (GM only) --}}
+  {{#if isGM}}
+    <div class="kctg-rm-source-tabs">
+      <button class="kctg-rm-source-tab {{#if (eq source 'world')}}kctg-tab-active{{/if}}" data-source="world" type="button">World</button>
+      {{#if canPersonal}}
+        <button class="kctg-rm-source-tab {{#if (eq source 'players')}}kctg-tab-active{{/if}}" data-source="players" type="button">Players</button>
+      {{/if}}
+      <button class="kctg-rm-source-tab {{#if (eq source 'personal')}}kctg-tab-active{{/if}}" data-source="personal" type="button">Personal</button>
+      <button class="kctg-rm-source-tab {{#if (eq source 'chart')}}kctg-tab-active{{/if}}" data-source="chart" type="button">Chart</button>
+      <button class="kctg-rm-source-tab kctg-rm-approvals-tab {{#if (eq source 'approvals')}}kctg-tab-active{{/if}}" data-source="approvals" type="button">
+        Approvals{{#if pendingCount}} <span class="kctg-approval-badge">{{pendingCount}}</span>{{/if}}
+      </button>
+      <button class="kctg-rm-source-tab {{#if (eq source 'log')}}kctg-tab-active{{/if}}" data-source="log" type="button">Log</button>
+    </div>
+  {{else}}
+    <div class="kctg-rm-source-badge">My Personal Recipes</div>
+  {{/if}}
+  {{!-- ══ LOG TAB ═══════════════════════════════════════════════════════════ --}}
+  {{!-- ══ CHART TAB ══════════════════════════════════════════════════════════ --}}
+  {{#if (eq source 'chart')}}
+  <div class="kctg-app kctg-chart-inner" style="padding:0;gap:0;">
+    <div class="kctg-chart-sidebar">
+      <div class="kctg-chart-sidebar-header">
+        <span>Recipes</span>
+        <div class="kctg-chart-sidebar-actions">
+          <button class="kctg-chart-select-all kctg-btn kctg-btn-xs kctg-btn-outline" type="button">All</button>
+          <button class="kctg-chart-select-none kctg-btn kctg-btn-xs kctg-btn-outline" type="button">None</button>
+        </div>
+      </div>
+      <input class="kctg-chart-filter kctg-input kctg-input-sm" type="text" placeholder="Filter…" value="{{chartFilter}}" />
+      <ul class="kctg-chart-recipe-list">
+        {{#each chartItems}}
+          {{#if isFolder}}
+            <li class="kctg-group-row kctg-chart-group-row" data-folder-id="{{id}}"
+                style="--group-color:{{#if color}}{{color}}{{else}}var(--kctg-russet){{/if}}">
+              <input class="kctg-chart-folder-check" type="checkbox" data-folder-id="{{id}}" {{#if allChecked}}checked{{/if}} {{#if someChecked}}data-indeterminate="1"{{/if}} title="Select / deselect all recipes in this folder" />
+              <div class="kctg-group-main" title="Click to collapse / expand">
+                <i class="fas {{#if collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} kctg-group-chevron"></i>
+                <span class="kctg-group-name">{{name}}</span>
+                <span class="kctg-group-line"></span>
+                <span class="kctg-group-count">{{selCount}}/{{count}}</span>
+              </div>
+            </li>
+          {{else}}
+            <li class="kctg-chart-recipe-item {{#if inFolder}}kctg-recipe-indented{{/if}}">
+              <label class="kctg-chart-recipe-label">
+                <input class="kctg-chart-recipe-check" type="checkbox" data-id="{{id}}" {{#if folderId}}data-folder-id="{{folderId}}"{{/if}} {{#if checked}}checked{{/if}} />
+                <span>{{name}}</span>
+              </label>
+            </li>
+          {{/if}}
+        {{else}}
+          <li class="kctg-subtle" style="padding:8px;">No recipes found.</li>
+        {{/each}}
+      </ul>
+      <div class="kctg-chart-legend">
+        <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-recipe"></span> Recipe</div>
+        <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-item-node"></span> Ingredient / Result</div>
+        <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-prereq"></span> Tool (not consumed)</div>
+        <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-line-solid"></span> consumed</div>
+        <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-line-dashed"></span> required</div>
+        <p class="kctg-subtle" style="font-size:.72rem;margin-top:6px;">Drag nodes · Drag canvas to pan · Scroll to zoom</p>
+      </div>
+    </div>
+    <div class="kctg-chart-wrap">
+      <div class="kctg-chart-toolbar">
+        <button class="kctg-chart-zoom-in  kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Zoom in"><i class="fas fa-search-plus"></i></button>
+        <button class="kctg-chart-zoom-out kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Zoom out"><i class="fas fa-search-minus"></i></button>
+        <span class="kctg-chart-zoom-label">100%</span>
+        <div class="kctg-chart-toolbar-sep"></div>
+        <button class="kctg-chart-reset-view kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Reset pan and zoom"><i class="fas fa-compress-arrows-alt"></i> Reset View</button>
+        <button class="kctg-chart-reset-pos  kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Reset all node positions to default layout"><i class="fas fa-th"></i> Reset Layout</button>
+      </div>
+      <div class="kctg-chart-canvas"></div>
+    </div>
+  </div>
+  {{!-- ══ APPROVALS TAB ══════════════════════════════════════════════════════ --}}
+  {{else if (eq source 'approvals')}}
+  <div class="kctg-rm-log-wrap kctg-rm-approvals-wrap">
+    <div class="kctg-rm-log-header">
+      <span>Pending Craft Approvals</span>
+      {{#if pendingCount}}<span class="kctg-subtle" style="font-size:.78rem;">{{pendingCount}} waiting</span>{{/if}}
+    </div>
+    {{#if approvals.length}}
+      <ul class="kctg-rm-approval-list">
+        {{#each approvals}}
+          <li class="kctg-rm-approval-entry">
+            <div class="kctg-rm-approval-header">
+              <span class="kctg-rm-approval-who"><strong>{{userName}}</strong> as <em>{{actorName}}</em></span>
+              <span class="kctg-rm-approval-recipe">{{recipeName}}</span>
+              {{#if (gt qty 1)}}<span class="kctg-rm-log-qty">×{{qty}}</span>{{/if}}
+            </div>
+            {{#if dangerList.length}}
+              <div class="kctg-rm-approval-danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Heads up:</strong> This recipe will consume item(s) that may be structural to the character sheet — deleting them could break the sheet or strip abilities. Double-check these are truly disposable before approving:
+                <em>{{#each dangerList}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</em>.
+              </div>
+            {{/if}}
+            <div class="kctg-rm-approval-cols">
+              <div class="kctg-rm-approval-col">
+                <div class="kctg-panel-header">Ingredients</div>
+                <ul class="kctg-ingredient-list">
+                  {{#each enrichedIngredients}}
+                    <li class="kctg-ingredient-row {{#if dangerous}}kctg-approval-dangerous-item{{/if}}">
+                      <img class="kctg-item-img" src="{{img}}" alt="{{name}}" />
+                      <span class="kctg-item-name">{{name}}</span>
+                      <span class="kctg-item-qty">×{{qty}}</span>
+                      {{#if requireOnly}}<span class="kctg-prereq-tag">REQUIRE ONLY</span>
+                      {{else if dangerous}}<span class="kctg-approval-type-badge">⚠ {{resolvedType}}</span>{{/if}}
+                    </li>
+                  {{else}}<li class="kctg-subtle" style="font-size:.8rem;">None</li>{{/each}}
+                </ul>
+              </div>
+              <div class="kctg-rm-approval-col">
+                <div class="kctg-panel-header">Produces</div>
+                <ul class="kctg-ingredient-list">
+                  {{#each enrichedResults}}
+                    <li class="kctg-ingredient-row">
+                      <img class="kctg-item-img" src="{{img}}" alt="{{name}}" />
+                      <span class="kctg-item-name">{{name}}</span>
+                      <span class="kctg-item-qty">×{{qty}}</span>
+                    </li>
+                  {{else}}<li class="kctg-subtle" style="font-size:.8rem;">None</li>{{/each}}
+                </ul>
+              </div>
+            </div>
+            <div class="kctg-rm-approval-actions">
+              <label class="kctg-rm-remember-label" title="Skip approval for this recipe+player in future — saved permanently">
+                <input class="kctg-rm-remember-check" type="checkbox" />
+                Remember
+              </label>
+              <button class="kctg-rm-approve-btn kctg-btn kctg-btn-gold kctg-btn-sm" data-req-id="{{id}}" type="button">
+                <i class="fas fa-check"></i> Approve
+              </button>
+              <button class="kctg-rm-reject-btn kctg-btn kctg-btn-outline kctg-btn-sm kctg-btn-reject" data-req-id="{{id}}" type="button">
+                <i class="fas fa-times"></i> Reject
+              </button>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <div class="kctg-empty-state"><p>No pending approval requests.</p></div>
+    {{/if}}
+  </div>
+
+  {{!-- ══ LOG TAB ═══════════════════════════════════════════════════════════ --}}
+  {{else if (eq source 'log')}}
+  <div class="kctg-rm-log-wrap">
+    <div class="kctg-rm-log-header">
+      <span>Craft History (newest first)</span>
+      <button class="kctg-rm-log-clear kctg-btn kctg-btn-xs kctg-btn-danger" type="button">Clear Log</button>
+    </div>
+    {{#if entries.length}}
+      <ul class="kctg-rm-log-list">
+        {{#each entries}}
+          <li class="kctg-rm-log-entry">
+            <div class="kctg-rm-log-meta">
+              <span class="kctg-rm-log-time">{{dateStr}} {{timeStr}}</span>
+              <span class="kctg-rm-log-actor">{{actorName}}</span>
+              {{#if modeLabel}}<span class="kctg-rm-log-mode">{{modeLabel}}</span>{{/if}}
+              {{#if (gt qty 1)}}<span class="kctg-rm-log-qty">×{{qty}}</span>{{/if}}
+            </div>
+            <div class="kctg-rm-log-recipe">{{recipeName}}</div>
+            {{#if ingStr}}<div class="kctg-rm-log-detail kctg-subtle">Used: {{ingStr}}</div>{{/if}}
+            {{#if resStr}}<div class="kctg-rm-log-detail kctg-subtle">Got: {{resStr}}</div>{{/if}}
+          </li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <div class="kctg-empty-state"><p>No crafting history yet.</p></div>
+    {{/if}}
+  </div>
+
+  {{!-- ══ PLAYERS TAB ════════════════════════════════════════════════════════ --}}
+  {{else if (eq source 'players')}}
+  <div class="kctg-rm-layout">
+    <div class="kctg-rm-sidebar">
+      <div class="kctg-rm-sidebar-header"><span>Players</span></div>
+      <ul class="kctg-rm-list">
+        {{#each playerEntries}}
+          <li class="kctg-player-group {{#if collapsed}}kctg-folder-collapsed{{/if}}">
+            <div class="kctg-player-header" data-user-id="{{user.id}}">
+              <img class="kctg-player-avatar" src="{{user.avatar}}" alt="{{user.name}}" />
+              <span class="kctg-player-name {{#unless user.active}}kctg-player-offline{{/unless}}">{{user.name}}{{#unless user.active}} (offline){{/unless}}</span>
+              <span class="kctg-player-count">{{recipes.length}}</span>
+            </div>
+            {{#unless collapsed}}
+              <ul class="kctg-rm-folder-recipes">
+                {{#each grouped}}
+                  {{#if folder}}
+                    <li class="kctg-folder-group">
+                      <div class="kctg-folder-header kctg-folder-header--compact" data-folder-id="{{folder.id}}">
+                        <span class="kctg-folder-name-static">{{folder.name}}</span>
+                      </div>
+                      <ul class="kctg-rm-folder-recipes kctg-nested">
+                        {{#each recipes}}<li class="kctg-rm-recipe-row {{#if (eq id ../../../../editingId)}}kctg-selected{{/if}}" data-id="{{id}}"><span class="kctg-rm-recipe-label">{{name}}</span></li>{{/each}}
+                      </ul>
+                    </li>
+                  {{else}}
+                    {{#each recipes}}<li class="kctg-rm-recipe-row {{#if (eq id ../../editingId)}}kctg-selected{{/if}}" data-id="{{id}}"><span class="kctg-rm-recipe-label">{{name}}</span></li>{{/each}}
+                  {{/if}}
+                {{/each}}
+              </ul>
+            {{/unless}}
+          </li>
+        {{else}}
+          <li class="kctg-empty-state kctg-empty-sm"><p>No players have personal recipes yet.</p></li>
+        {{/each}}
+      </ul>
+    </div>
+    <div class="kctg-rm-resize-handle" title="Drag to resize"></div>
+    <div class="kctg-rm-editor">
+      {{#if viewing}}
+        <div class="kctg-player-attribution">
+          <img class="kctg-player-avatar kctg-player-avatar--sm" src="{{viewingUser.avatar}}" alt="{{viewingUser.name}}" />
+          <span>Recipe by <strong>{{viewingUser.name}}</strong></span>
+          {{#if alreadyInWorld}}<span class="kctg-world-exists-badge">Already in World</span>{{/if}}
+        </div>
+        <div class="kctg-rm-view-name">{{viewing.name}}</div>
+        {{#if viewing.description}}<p class="kctg-recipe-desc kctg-rm-view-desc">{{viewing.description}}</p>{{/if}}
+        <div class="kctg-promote-bar">
+          <button class="kctg-rm-promote-copy kctg-btn kctg-btn-gold kctg-btn-sm" type="button">Copy to World</button>
+          <button class="kctg-rm-promote-move kctg-btn kctg-btn-outline kctg-btn-sm" type="button">Move to World</button>
+        </div>
+        {{#if enrichedPrereqs.length}}
+          <div class="kctg-panel-header">Required Tools</div>
+          <ul class="kctg-ingredient-list">{{#each enrichedPrereqs}}<li class="kctg-ingredient-row"><img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" /><span class="kctg-item-name">{{resolvedName}}</span><span class="kctg-prereq-tag">NOT CONSUMED</span></li>{{/each}}</ul>
+        {{/if}}
+        <div class="kctg-panel-header">Ingredients</div>
+        {{#if enrichedIngredients.length}}<ul class="kctg-ingredient-list">{{#each enrichedIngredients}}<li class="kctg-ingredient-row"><img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" /><span class="kctg-item-name">{{resolvedName}}</span><span class="kctg-item-qty">×{{qty}}</span></li>{{/each}}</ul>{{else}}<p class="kctg-subtle">No ingredients.</p>{{/if}}
+        <div class="kctg-panel-header">Produces</div>
+        {{#if enrichedResults.length}}<ul class="kctg-ingredient-list">{{#each enrichedResults}}<li class="kctg-ingredient-row"><img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" /><span class="kctg-item-name">{{resolvedName}}</span><span class="kctg-item-qty">×{{qty}}</span></li>{{/each}}</ul>{{else}}<p class="kctg-subtle">This recipe has no result items yet.</p>{{/if}}
+      {{else}}
+        <div class="kctg-empty-state"><p>Select a player's recipe to review it.</p></div>
+      {{/if}}
+    </div>
+  </div>
+
+  {{!-- ══ WORLD / PERSONAL TABS ══════════════════════════════════════════════ --}}
+  {{else}}
+  <div class="kctg-rm-layout">
+
+    <div class="kctg-rm-sidebar">
+      <div class="kctg-rm-sidebar-header">
+        <span>{{#if (eq source 'world')}}World{{else}}Personal{{/if}}</span>
+        <div class="kctg-rm-sidebar-actions">
+          <button class="kctg-rm-export-btn kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Export to text file"><i class="fas fa-file-export"></i></button>
+          {{#if canWrite}}
+            <button class="kctg-rm-import-btn kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Import from text file"><i class="fas fa-file-import"></i></button>
+            <button class="kctg-rm-add-folder kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="New Folder"><i class="fas fa-folder-plus"></i></button>
+            <button class="kctg-rm-add-recipe kctg-btn kctg-btn-gold kctg-btn-sm" type="button"><i class="fas fa-plus"></i> New</button>
+          {{/if}}
+        </div>
+      </div>
+
+      <ul class="kctg-rm-list">
+        {{#each listItems}}
+          {{#if isFolder}}
+            <li class="kctg-group-row" data-folder-id="{{id}}"
+                style="--group-color:{{#if color}}{{color}}{{else}}var(--kctg-russet){{/if}}" {{#if ../canWrite}}title="Right-click to edit · Drag recipes onto me"{{/if}}>
+              <div class="kctg-group-main" title="Click to collapse / expand">
+                <i class="fas {{#if collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} kctg-group-chevron"></i>
+                <span class="kctg-group-name">{{name}}</span>
+                <span class="kctg-group-line"></span>
+                <span class="kctg-group-count">{{count}}</span>
+              </div>
+            </li>
+          {{else}}
+            <li class="kctg-rm-recipe-row {{#if inFolder}}kctg-recipe-indented{{/if}} {{#if (eq id ../editingId)}}kctg-selected{{/if}}" data-id="{{id}}" {{#if ../canWrite}}title="Right-click for options"{{/if}}>
+              {{#if locked}}<span class="kctg-lock-dot"></span>{{/if}}
+              <span class="kctg-rm-recipe-label">{{name}}</span>
+            </li>
+          {{/if}}
+        {{else}}
+          <li class="kctg-empty-state kctg-empty-sm"><p>No recipes yet.</p></li>
+        {{/each}}
+      </ul>
+    </div>
+
+    <div class="kctg-rm-resize-handle" title="Drag to resize"></div>
+
+    <div class="kctg-rm-editor">
+      {{#if editing}}
+        {{#if canWrite}}
+
+          {{!-- Meta --}}
+          <div class="kctg-rm-meta">
+            <div class="kctg-rm-title-row">
+              <input class="kctg-rm-name-input kctg-input kctg-input-title" type="text" value="{{editing.name}}" placeholder="Recipe name" />
+              <div class="kctg-rm-folder-assign">
+                <select class="kctg-rm-folder-select kctg-select kctg-select-sm">
+                  <option value="">— No Folder —</option>
+                  {{#each folders}}<option value="{{id}}" {{#if (eq id ../editing.folderId)}}selected{{/if}}>{{name}}</option>{{/each}}
+                </select>
+              </div>
+            </div>
+            <textarea class="kctg-rm-desc-input kctg-input kctg-textarea" placeholder="Optional description…" rows="2">{{editing.description}}</textarea>
+            <div class="kctg-rm-crafttime-row" style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+              <span class="kctg-label"><i class="fas fa-hourglass-half" style="margin-right:4px;opacity:.7;"></i>Craft time</span>
+              <input class="kctg-rm-craftdays-input kctg-input kctg-input-qty" type="number" min="0" step="1" value="{{editing.craftDays}}" style="width:56px;" />
+              <span class="kctg-label" style="opacity:.8;">day(s)</span>
+              <label class="kctg-rm-craftflat-label" style="display:flex;align-items:center;gap:4px;font-size:.82em;opacity:.85;" title="When off, craft time multiplies by the quantity crafted. When on, it's a flat total no matter the quantity.">
+                <input class="kctg-rm-craftflat-toggle" type="checkbox" {{#if editing.craftTimeFlat}}checked{{/if}} />
+                flat total
+              </label>
+              <span class="kctg-rm-crafttime-hint" style="font-size:.78em;opacity:.6;">{{#if editing.craftDays}}{{#if editing.craftTimeFlat}}total per craft{{else}}per item{{/if}}{{else}}instant{{/if}}</span>
+            </div>
+          </div>
+
+          {{!-- Discovery — GM only --}}
+          {{#if isGM}}
+          <div class="kctg-rm-discovery-row">
+            <label class="kctg-rm-lock-label">
+              <input class="kctg-rm-lock-toggle" type="checkbox" {{#if editing.locked}}checked{{/if}} />
+              Lock (hidden from players)
+            </label>
+            {{#if editing.locked}}
+              <div class="kctg-rm-unlock-section">
+                <div class="kctg-rm-unlock-mode-row">
+                  <span class="kctg-label">Auto-reveal when actor has</span>
+                  <select class="kctg-rm-unlock-mode kctg-select kctg-select-sm">
+                    <option value="any" {{#if (eq editing.unlockMode 'any')}}selected{{/if}}>any one</option>
+                    <option value="all" {{#if (eq editing.unlockMode 'all')}}selected{{/if}}>all</option>
+                  </select>
+                  <span class="kctg-label">of these items:</span>
+                </div>
+                <ul class="kctg-rm-unlock-list">
+                  {{#each editing.unlockItems}}
+                    <li class="kctg-rm-unlock-item-row">
+                      {{#if img}}<img class="kctg-item-img" src="{{img}}" alt="{{name}}" />{{/if}}
+                      <span class="kctg-item-name">{{name}}</span>
+                      <button class="kctg-rm-unlock-remove kctg-btn kctg-btn-xs kctg-btn-danger" data-idx="{{@index}}" type="button">×</button>
+                    </li>
+                  {{else}}
+                    <li class="kctg-subtle" style="font-size:.8rem;padding:2px 0;">If no items are added, the recipe will not reveal.</li>
+                  {{/each}}
+                </ul>
+                <div class="kctg-rm-unlock-drop kctg-drop-zone kctg-drop-zone--sm">Drop item to add unlock condition</div>
+              </div>
+            {{/if}}
+          </div>
+          {{/if}}
+
+          {{!-- Editor sections: full-width stacked --}}
+          <div class="kctg-rm-sections">
+
+            {{!-- Prerequisites --}}
+            <div class="kctg-rm-section">
+              <div class="kctg-panel-header">Required Tools <span class="kctg-panel-hint">(in inventory, not consumed)</span></div>
+              <ul class="kctg-rm-ingredient-list">
+                {{#each enrichedPrereqs}}
+                  <li class="kctg-rm-item-row">
+                    <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                    <span class="kctg-item-name kctg-truncate" title="{{resolvedName}}">{{resolvedName}}</span>
+                    <button class="kctg-rm-remove-pre kctg-btn kctg-btn-xs kctg-btn-danger" data-idx="{{@index}}" type="button">×</button>
+                  </li>
+                {{else}}<li class="kctg-rm-empty-slot kctg-subtle">None yet.</li>{{/each}}
+              </ul>
+              <div class="kctg-rm-prereq-drop kctg-drop-zone">Drop tools here</div>
+            </div>
+
+            {{!-- Ingredients --}}
+            <div class="kctg-rm-section">
+              <div class="kctg-panel-header">Ingredients</div>
+              <ul class="kctg-rm-ingredient-list">
+                {{#each enrichedIngredients}}
+                  <li class="kctg-rm-item-block">
+                    <div class="kctg-rm-item-row">
+                      <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                      <span class="kctg-item-name kctg-truncate" title="{{resolvedName}}">{{resolvedName}}</span>
+                      <input class="kctg-rm-ing-qty kctg-input-qty" type="number" min="1" value="{{qty}}" data-idx="{{@index}}" />
+                      <label class="kctg-rm-consume-label" title="If unchecked, ingredient is required but not consumed">
+                        <input class="kctg-rm-ing-consume" type="checkbox" data-idx="{{@index}}" {{#unless (eq consume false)}}checked{{/unless}} />
+                        consume
+                      </label>
+                      <button class="kctg-rm-remove-ing kctg-btn kctg-btn-xs kctg-btn-danger" data-idx="{{@index}}" type="button">×</button>
+                    </div>
+                    <div class="kctg-rm-descriptors">
+                      <div class="kctg-rm-desc-row">
+                        <input class="kctg-rm-desc1-label kctg-input kctg-input-sm kctg-desc-label" type="text" placeholder="Label (e.g. Effect)" value="{{desc1Label}}" data-idx="{{@index}}" />
+                        <input class="kctg-rm-desc1-value kctg-input kctg-input-sm kctg-desc-value" type="text" placeholder="Value" value="{{desc1Value}}" data-idx="{{@index}}" />
+                      </div>
+                      <div class="kctg-rm-desc-row">
+                        <input class="kctg-rm-desc2-label kctg-input kctg-input-sm kctg-desc-label" type="text" placeholder="Label (e.g. Side Effect)" value="{{desc2Label}}" data-idx="{{@index}}" />
+                        <input class="kctg-rm-desc2-value kctg-input kctg-input-sm kctg-desc-value" type="text" placeholder="Value" value="{{desc2Value}}" data-idx="{{@index}}" />
+                      </div>
+                    </div>
+                  </li>
+                {{else}}<li class="kctg-rm-empty-slot kctg-subtle">No ingredients yet.</li>{{/each}}
+              </ul>
+              <div class="kctg-rm-ingredient-drop kctg-drop-zone">Drop ingredients here</div>
+            </div>
+
+            {{!-- Results --}}
+            <div class="kctg-rm-section">
+              <div class="kctg-panel-header">Produces</div>
+              <ul class="kctg-rm-result-list">
+                {{#each enrichedResults}}
+                  <li class="kctg-rm-item-row">
+                    <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                    <span class="kctg-item-name kctg-truncate" title="{{resolvedName}}">{{resolvedName}}</span>
+                    <input class="kctg-rm-res-qty kctg-input-qty" type="number" min="1" value="{{qty}}" data-idx="{{@index}}" />
+                    <button class="kctg-rm-remove-res kctg-btn kctg-btn-xs kctg-btn-danger" data-idx="{{@index}}" type="button">×</button>
+                  </li>
+                {{else}}<li class="kctg-rm-empty-slot kctg-subtle">No results yet.</li>{{/each}}
+              </ul>
+              <div class="kctg-rm-result-drop kctg-drop-zone">Drop results here</div>
+              {{#if (or aggregatedPrimary.length aggregatedSecondary.length)}}
+                <div class="kctg-descriptor-preview">
+                  <div class="kctg-panel-header kctg-panel-header--sm">Resulting Properties</div>
+                  {{#each aggregatedPrimary}}<div class="kctg-preview-line kctg-preview-line--primary"><span class="kctg-preview-label">{{label}}:</span> {{value}}</div>{{/each}}
+                  {{#each aggregatedSecondary}}<div class="kctg-preview-line kctg-preview-line--secondary"><span class="kctg-preview-label">{{label}}:</span> {{value}}</div>{{/each}}
+                </div>
+              {{/if}}
+            </div>
+
+          </div>{{!-- end sections --}}
+
+        {{else}}
+          <div class="kctg-empty-state"><p>You don't have permission to edit recipes here.</p></div>
+        {{/if}}
+      {{else}}
+        <div class="kctg-empty-state">
+          <p>Select a recipe to edit{{#if canWrite}}, or click <strong>+ New</strong> to create one{{/if}}.</p>
+          {{#if canWrite}}<p class="kctg-subtle">Drag items from the Items sidebar into the drop zones.</p>{{/if}}
+        </div>
+      {{/if}}
+    </div>
+
+  </div>
+  {{/if}}{{!-- end source branch --}}
+
+</div>

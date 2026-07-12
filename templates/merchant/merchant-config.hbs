@@ -1,0 +1,291 @@
+<div class="kctg-app kctg-merch-config-inner">
+
+  {{!-- ════ HEADER — silhouette + name + enable/disable ════ --}}
+  <div class="kctg-merch-cfg-header">
+
+    {{!-- Silhouette: amber-lit shape based on token image --}}
+    <div class="kctg-merch-cfg-sil">
+      <img src="{{actor.tokenImg}}" class="kctg-merch-cfg-sil-img" alt="{{actor.name}}"
+           onerror="this.src='icons/svg/mystery-man.svg'" />
+    </div>
+
+    {{!-- Name & badges --}}
+    <div class="kctg-merch-cfg-info">
+      <div class="kctg-merch-cfg-name">{{actor.name}}</div>
+      <div class="kctg-merch-cfg-meta">
+        <span class="kctg-subtle kctg-dim" style="text-transform:capitalize;">{{actor.type}}</span>
+        {{#if merchant.enabled}}
+          <span class="kctg-merch-badge kctg-merch-badge--active">
+            <i class="fas fa-store"></i> Merchant
+          </span>
+          {{#if merchant.openForBusiness}}
+            <span class="kctg-merch-badge kctg-merch-badge--open">Open</span>
+          {{else}}
+            <span class="kctg-merch-badge kctg-merch-badge--closed">Closed</span>
+          {{/if}}
+        {{/if}}
+      </div>
+    </div>
+
+    {{!-- Enable / Disable button --}}
+    {{#if isGM}}
+    <div class="kctg-merch-cfg-actions">
+      {{#if merchant.enabled}}
+        <button class="kctg-merch-disable-btn kctg-btn kctg-btn-danger kctg-btn-sm" type="button">
+          <i class="fas fa-ban"></i> Disable
+        </button>
+      {{else}}
+        <button class="kctg-merch-enable-btn kctg-btn kctg-btn-gold" type="button">
+          <i class="fas fa-store"></i> Enable as Merchant
+        </button>
+      {{/if}}
+    </div>
+    {{/if}}
+
+  </div>{{!-- end header --}}
+
+  {{#if merchant.enabled}}
+
+    {{!-- ════ TAB BAR ════ --}}
+    <div class="kctg-tab-bar">
+      <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabTables}}kctg-tab-active{{/if}}"
+              data-tab="tables" type="button">
+        <i class="fas fa-dice-d20"></i> Stock Tables
+        {{#if merchant.stockTables.length}}
+          <span class="kctg-tab-badge">{{merchant.stockTables.length}}</span>
+        {{/if}}
+      </button>
+      <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabInventory}}kctg-tab-active{{/if}}"
+              data-tab="inventory" type="button">
+        <i class="fas fa-box-open"></i> Inventory
+        {{#if inventory.length}}
+          <span class="kctg-tab-badge">{{inventory.length}}</span>
+        {{/if}}
+      </button>
+      <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabSettings}}kctg-tab-active{{/if}}"
+              data-tab="settings" type="button">
+        <i class="fas fa-cog"></i> Settings
+      </button>
+    </div>
+
+    <div class="kctg-merch-tab-content">
+
+      {{!-- ════ STOCK TABLES TAB ════ --}}
+      {{#if isTabTables}}
+      <div class="kctg-merch-tables-tab">
+
+        <div class="kctg-merch-toolbar">
+          <span class="kctg-hint kctg-dim">
+            <i class="fas fa-info-circle"></i> Drag Roll Tables from the sidebar
+          </span>
+          {{#if isGM}}
+          <button class="kctg-merch-restock-btn kctg-btn kctg-btn-gold kctg-btn-sm" type="button">
+            <i class="fas fa-sync-alt"></i> Restock Now
+          </button>
+          {{/if}}
+        </div>
+
+        {{#if merchant.stockTables.length}}
+        <ul class="kctg-merch-table-list">
+          {{#each merchant.stockTables}}
+          <li class="kctg-merch-table-card {{#unless enabled}}kctg-merch-table-card--disabled{{/unless}}">
+
+            {{!-- Header row: active toggle + icon + name + remove --}}
+            <div class="kctg-merch-table-top">
+              {{#if ../isGM}}
+              <label class="kctg-merch-active-toggle" title="Enable / disable this table">
+                <input class="kctg-tbl-active" type="checkbox"
+                       {{#if enabled}}checked{{/if}} data-id="{{id}}" />
+              </label>
+              {{/if}}
+              <img src="{{tableImg}}" class="kctg-merch-table-icon"
+                   onerror="this.src='icons/svg/d20-black.svg'" alt="{{tableName}}" />
+              <span class="kctg-merch-table-name">{{tableName}}</span>
+              {{#if ../isGM}}
+              <button class="kctg-tbl-remove kctg-btn kctg-btn-danger kctg-btn-xs"
+                      data-id="{{id}}" type="button">
+                <i class="fas fa-times"></i>
+              </button>
+              {{/if}}
+            </div>
+
+            {{!-- Config row: rolls formula + toggles --}}
+            {{#if ../isGM}}
+            <div class="kctg-merch-table-cfg">
+
+              <label class="kctg-merch-cfg-lbl" title="Roll formula — number or dice like 1d6+2">
+                <i class="fas fa-dice"></i> Rolls
+              </label>
+              <input class="kctg-tbl-formula kctg-input kctg-input-sub"
+                     type="text" value="{{rollFormula}}" data-id="{{id}}"
+                     placeholder="1d4+1" style="max-width:80px;" />
+
+              <label class="kctg-merch-cfg-check"
+                     title="Skip items already drawn from this table in the same restock">
+                <input class="kctg-tbl-unique" type="checkbox"
+                       {{#if unique}}checked{{/if}} data-id="{{id}}" />
+                <span>No duplicates</span>
+              </label>
+
+              <label class="kctg-merch-cfg-check"
+                     title="Remove ALL existing inventory before rolling this table">
+                <input class="kctg-tbl-reset" type="checkbox"
+                       {{#if resetBeforeAdd}}checked{{/if}} data-id="{{id}}" />
+                <span>Clear before restock</span>
+              </label>
+
+            </div>
+            {{/if}}
+
+          </li>
+          {{/each}}
+        </ul>
+        {{/if}}
+
+        {{#if isGM}}
+        <div class="kctg-merch-table-drop kctg-drop-zone">
+          <i class="fas fa-dice-d20"></i> Drop a Roll Table here to add it
+        </div>
+        {{else}}
+        {{#unless merchant.stockTables.length}}
+        <div class="kctg-empty-state">
+          <i class="fas fa-dice-d20 kctg-empty-icon"></i>
+          <p>No stock tables configured.</p>
+        </div>
+        {{/unless}}
+        {{/if}}
+
+      </div>
+      {{/if}}{{!-- end tables tab --}}
+
+      {{!-- ════ INVENTORY TAB ════ --}}
+      {{#if isTabInventory}}
+      <div class="kctg-merch-inventory-tab">
+
+        {{#if isGM}}
+        <div class="kctg-merch-toolbar">
+          <span class="kctg-hint kctg-dim">
+            <i class="fas fa-info-circle"></i> Physical items from <strong>{{actor.name}}</strong>'s sheet
+          </span>
+          <button class="kctg-merch-clear-inv kctg-btn kctg-btn-danger kctg-btn-sm" type="button">
+            <i class="fas fa-trash"></i> Clear All
+          </button>
+        </div>
+        {{/if}}
+
+        {{#if inventory.length}}
+        <ul class="kctg-merch-inv-list">
+          {{#each inventory}}
+          <li class="kctg-merch-inv-row">
+            <img src="{{img}}" class="kctg-item-img"
+                 onerror="this.src='icons/svg/item-bag.svg'" alt="{{name}}" />
+            <span class="kctg-item-name">{{name}}</span>
+            {{#if priceLabel}}<span class="kctg-merch-price">{{priceLabel}}</span>{{/if}}
+            <span class="kctg-item-qty">×{{qty}}</span>
+            {{#if ../isGM}}
+            <button class="kctg-merch-inv-remove kctg-btn kctg-btn-danger kctg-btn-xs"
+                    data-id="{{id}}" type="button">
+              <i class="fas fa-times"></i>
+            </button>
+            {{/if}}
+          </li>
+          {{/each}}
+        </ul>
+        {{else}}
+        <div class="kctg-empty-state">
+          <i class="fas fa-box kctg-empty-icon"></i>
+          <p>No items in inventory.</p>
+          {{#if isGM}}
+          <p class="kctg-subtle">Use <strong>Restock Now</strong> on the Stock Tables tab, or drag items onto the actor's sheet directly.</p>
+          {{/if}}
+        </div>
+        {{/if}}
+
+      </div>
+      {{/if}}{{!-- end inventory tab --}}
+
+      {{!-- ════ SETTINGS TAB ════ --}}
+      {{#if isTabSettings}}
+      <div class="kctg-merch-settings-tab">
+
+        <div class="kctg-panel-header"><i class="fas fa-cog"></i> Merchant Settings</div>
+
+        {{!-- Open for Business --}}
+        <div class="kctg-merch-setting-row">
+          <span class="kctg-merch-setting-lbl">Open for Business</span>
+          <label class="kctg-merch-toggle">
+            <input class="kctg-merch-open" type="checkbox"
+                   {{#if merchant.openForBusiness}}checked{{/if}}
+                   {{#unless isGM}}disabled{{/unless}} />
+            <span class="kctg-merch-toggle-track"></span>
+          </label>
+          <span class="kctg-hint kctg-dim">Players can open this merchant's shop</span>
+        </div>
+
+        {{!-- Sell Price Modifier --}}
+        <div class="kctg-merch-setting-row">
+          <span class="kctg-merch-setting-lbl">Sell Price Modifier</span>
+          <div class="kctg-merch-num-wrap">
+            <input class="kctg-merch-price-mod kctg-input-qty" type="number"
+                   min="1" max="500" step="5" value="{{merchant.priceModifier}}"
+                   {{#unless isGM}}disabled{{/unless}} />
+            <span class="kctg-merch-unit">%</span>
+          </div>
+          <span class="kctg-hint kctg-dim">of base item price  (100 = normal)</span>
+        </div>
+
+        {{!-- Buys Items --}}
+        <div class="kctg-merch-setting-row">
+          <span class="kctg-merch-setting-lbl">Buys Items from Players</span>
+          <label class="kctg-merch-toggle">
+            <input class="kctg-merch-buys" type="checkbox"
+                   {{#if merchant.buysItems}}checked{{/if}}
+                   {{#unless isGM}}disabled{{/unless}} />
+            <span class="kctg-merch-toggle-track"></span>
+          </label>
+          <span class="kctg-hint kctg-dim">Allow players to sell items here</span>
+        </div>
+
+        {{!-- Buy Price (only visible when buysItems is on) --}}
+        {{#if merchant.buysItems}}
+        <div class="kctg-merch-setting-row kctg-merch-setting-indent">
+          <span class="kctg-merch-setting-lbl">Buy Price</span>
+          <div class="kctg-merch-num-wrap">
+            <input class="kctg-merch-buy-mod kctg-input-qty" type="number"
+                   min="1" max="100" step="5" value="{{merchant.buyModifier}}"
+                   {{#unless isGM}}disabled{{/unless}} />
+            <span class="kctg-merch-unit">%</span>
+          </div>
+          <span class="kctg-hint kctg-dim">of base price paid to player</span>
+        </div>
+        {{/if}}
+
+        {{!-- Keep Zero Quantity --}}
+        <div class="kctg-merch-setting-row">
+          <span class="kctg-merch-setting-lbl">Keep Zero-Qty Items</span>
+          <label class="kctg-merch-toggle">
+            <input class="kctg-merch-zero-qty" type="checkbox"
+                   {{#if merchant.keepZeroQuantity}}checked{{/if}}
+                   {{#unless isGM}}disabled{{/unless}} />
+            <span class="kctg-merch-toggle-track"></span>
+          </label>
+          <span class="kctg-hint kctg-dim">Show items even when quantity reaches 0</span>
+        </div>
+
+      </div>
+      {{/if}}{{!-- end settings tab --}}
+
+    </div>{{!-- end tab content --}}
+
+  {{else}}
+    {{!-- Actor exists but not yet a merchant --}}
+    <div class="kctg-empty-state kctg-merch-cfg-not-enabled">
+      <i class="fas fa-store kctg-empty-icon" style="opacity:.2;font-size:2.6rem;"></i>
+      <p>This actor is not yet a merchant.</p>
+      {{#if isGM}}
+      <p class="kctg-subtle">Click <strong>Enable as Merchant</strong> above to configure it as a store.</p>
+      {{/if}}
+    </div>
+  {{/if}}{{!-- end if merchant.enabled --}}
+
+</div>

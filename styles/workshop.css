@@ -1,0 +1,1945 @@
+/* ═══════════════════════════════════════════════════════
+   KCTG Workshop — Component Styles
+   Shared variables, base components, and utilities are
+   in kctg-shared.css (loaded first via module.json).
+   ═══════════════════════════════════════════════════════ */
+
+/* Workshop inner shell — no gap/padding, tab bar sits flush */
+.kctg-workshop-inner { gap: 0 !important; padding: 0 !important; overflow: hidden !important; }
+
+/* Workshop-specific table drop zone labels */
+.kctg-table-placeholder { font-style: italic; font-size: 0.75rem; }
+.kctg-table-name        { font-size: 0.8rem; color: var(--kctg-gold-light); }
+.kctg-table-slot-label  { font-size: 0.7rem; color: var(--kctg-gold-dim); font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+
+/* Day counter input — smaller than standard qty */
+.kctg-day-num { height: 24px !important; padding: 2px 4px !important; font-size: .72rem !important; }
+
+/* ════════════════════════════════════════════════════════
+   WORKSHOP HUB
+   ════════════════════════════════════════════════════════ */
+
+/* ── Banner ────────────────────────────────────────────── */
+.kctg-banner-wrap { padding: 0; flex-shrink: 0; }
+.kctg-banner-area {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 180px;   /* prevent ballooning on wide windows */
+  background: var(--kctg-bg-raised) center/cover no-repeat;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 6px; position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--kctg-border-dim);
+}
+.kctg-banner-area:not(.kctg-banner-empty) { cursor: pointer; }
+.kctg-banner-area:not(.kctg-banner-empty):hover::after {
+  content: "✎ Change";
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--kctg-gold); font-size: 0.9rem; font-weight: 700;
+  font-family: Signika, serif;
+}
+.kctg-banner-empty {
+  cursor: pointer;
+  border-radius: var(--kctg-radius);
+  margin: 8px;
+  width: calc(100% - 16px);
+  border: 1px dashed var(--kctg-amber-line);
+  background: rgba(245,180,48,0.04);
+}
+.kctg-banner-empty:hover { background: var(--kctg-amber-soft); border-color: var(--kctg-amber); }
+.kctg-banner-icon { font-size: 2.5rem; color: var(--kctg-border); }
+.kctg-banner-hint { font-size: 0.8rem; color: var(--kctg-text-muted); }
+.kctg-banner-clear {
+  position: absolute; top: 6px; right: 6px; z-index: 2;
+  opacity: 0; transition: opacity 0.15s;
+}
+.kctg-banner-area:hover .kctg-banner-clear { opacity: 1; }
+
+/* The tab bar clips (never scrolls) when the window is too narrow, so enforce a
+   window width that keeps all 7 tabs reachable. ApplicationV2's resize handle
+   respects CSS min-width. */
+.application.kctg-workshop-app { min-width: 740px; }
+
+/* ── Tab bar — workshop-specific layout (equal-width full-stretch tabs)
+   Scoped so it doesn't override the shared pill-style tabs in forge/quests. */
+.kctg-workshop-app .kctg-tab-bar {
+  display: flex; gap: 2px; padding: 8px 0 0;
+  background: var(--kctg-bg-panel); border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink: 0;
+}
+.kctg-workshop-app .kctg-tab-btn {
+  flex: 1; padding: 7px 6px;
+  background: transparent; border: 1px solid transparent;
+  border-radius: var(--kctg-radius) var(--kctg-radius) 0 0;
+  color: var(--kctg-text-dim); font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; font-family: Signika, serif;
+  transition: color 0.12s, background 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  white-space: nowrap;
+}
+.kctg-workshop-app .kctg-tab-btn:hover { color: var(--kctg-gold-light); }
+.kctg-workshop-app .kctg-tab-active {
+  background: var(--kctg-bg) !important;
+  border-color: var(--kctg-border) var(--kctg-border) transparent !important;
+  color: var(--kctg-gold) !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+.kctg-workshop-app .kctg-tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  background: var(--kctg-ribbon); border-radius: 8px;
+  font-size: 0.68rem; font-weight: 700; color: #0b0a13; line-height: 1;
+  -webkit-text-fill-color: #0b0a13;
+}
+/* Active task count stays green — semantic distinction */
+.kctg-badge-active { background: var(--kctg-success) !important; }
+
+/* ── Tab content ───────────────────────────────────────── */
+.kctg-tab-content {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+
+/* ── Overview tab ──────────────────────────────────────── */
+.kctg-overview-tab {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 14px; flex: 1;
+}
+.kctg-stat-row {
+  display: flex; flex-direction: row; gap: 6px; flex-wrap: nowrap;
+}
+.kctg-stat-card {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: var(--kctg-bg-raised);
+  border: 1px solid var(--kctg-border-dim);
+  border-top: 2px solid var(--kctg-amber-line);
+  border-radius: var(--kctg-radius-card); padding: 8px 10px;
+  flex: 1; min-width: 0; overflow: hidden; text-align: center;
+}
+.kctg-stat-num {
+  font-size: 1.4rem; font-weight: 800;
+  line-height: 1; flex-shrink: 0; font-family: var(--kctg-font);
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.kctg-stat-lbl {
+  font-size: 0.60rem; color: var(--kctg-text-muted);
+  text-transform: uppercase; letter-spacing: 0.10em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.kctg-overview-worker-list {
+  list-style: none; margin: 0; padding: 5px 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 4px;
+}
+.kctg-overview-worker-row {
+  display: flex; flex-direction: row; align-items: center; gap: 6px;
+  background: var(--kctg-bg-raised); border: 1px solid var(--kctg-border-dim);
+  border-left: 2px solid var(--kctg-russet);
+  border-radius: var(--kctg-radius); padding: 5px 8px;
+  transition: border-color var(--kctg-ease);
+}
+.kctg-overview-worker-row:hover { border-color: var(--kctg-amber-line); }
+.kctg-actor-img {
+  width: 24px; height: 24px; border-radius: 3px;
+  border: 1px solid var(--kctg-border); object-fit: cover; flex-shrink: 0;
+}
+.kctg-ow-name   { font-size: 0.78rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kctg-ow-status { font-size: 0.74rem; color: var(--kctg-text-dim); flex: 1.2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kctg-morale-pip {
+  font-size: 0.68rem; font-weight: 700; white-space: nowrap; padding: 2px 7px;
+  border-radius: var(--kctg-radius-pill);
+}
+.kctg-morale-high { color: var(--kctg-success); background: rgba(90,173,90,0.12); border: 1px solid rgba(90,173,90,0.20); }
+.kctg-morale-mid  { color: var(--kctg-amber);   background: rgba(245,180,48,0.10); border: 1px solid var(--kctg-amber-line); }
+.kctg-morale-low  { color: var(--kctg-danger);  background: rgba(201,60,88,0.10);  border: 1px solid rgba(201,60,88,0.20); }
+.kctg-loyalty-pip { font-size: 0.68rem; font-weight: 700; white-space: nowrap; padding: 2px 7px; border-radius: var(--kctg-radius-pill); background: rgba(0,0,0,0.25); border: 1px solid var(--kctg-border-dim); }
+
+.kctg-overview-actions { margin-top: auto; padding-top: 4px; }
+.kctg-mode-badge {
+  font-size: 0.72rem; color: var(--kctg-text-muted);
+  text-align: center; padding: 4px 0;
+}
+
+/* ── Workers tab ───────────────────────────────────────── */
+.kctg-workers-tab { overflow: hidden; }
+.kctg-worker-list {
+  list-style: none; margin: 0; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  overflow-y: auto; flex: 1;
+}
+.kctg-worker-card {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--kctg-bg-raised);
+  border: 1px solid var(--kctg-border-dim); border-left: 2px solid var(--kctg-russet);
+  border-radius: var(--kctg-radius-card); padding: 8px 10px;
+  transition: border-color var(--kctg-ease), background var(--kctg-ease);
+  position: relative;
+  overflow: hidden;
+}
+.kctg-worker-card:hover { background: var(--kctg-entry-glass-hover); border-color: var(--kctg-amber-line); }
+.kctg-worker-card-top { display: flex; align-items: center; gap: 8px; }
+
+.kctg-worker-sliders { display: flex; flex-direction: column; gap: 4px; padding: 2px 0; }
+.kctg-slider-row { display: flex; align-items: center; gap: 8px; }
+.kctg-slider-lbl {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; width: 46px; flex-shrink: 0;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+/* Manual morale/loyalty entry (0-10) — replaces the old range sliders.
+   Sized to match the Tasks-tab Travel/Task day inputs (.kctg-duration-row .kctg-input-qty). */
+.kctg-stat-input {
+  flex: 0 0 auto; width: 40px; height: 20px; box-sizing: border-box; text-align: center;
+  font-size: 0.72rem; font-weight: 700; line-height: 1;
+  padding: 0 2px;
+  background: var(--kctg-bg-panel); color: var(--kctg-text);
+  border: 1px solid var(--kctg-border-dim); border-radius: var(--kctg-radius);
+}
+.kctg-stat-input:focus { outline: none; border-color: var(--kctg-amber); }
+/* Morale value color (loyalty uses an inline style); higher specificity than .kctg-stat-input */
+input.kctg-worker-morale.kctg-morale-high { color: var(--kctg-success); }
+input.kctg-worker-morale.kctg-morale-mid  { color: var(--kctg-amber); }
+input.kctg-worker-morale.kctg-morale-low  { color: var(--kctg-danger); }
+
+.kctg-worker-status-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* ── Tasks tab ─────────────────────────────────────────── */
+.kctg-tasks-tab { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.kctg-task-route-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 2px 0;
+}
+.kctg-task-list {
+  list-style: none; margin: 0; padding: 8px 12px;
+  display: flex; flex-direction: column; gap: 7px;
+  overflow-y: auto; flex: 1;
+}
+.kctg-task-card {
+  display: flex; flex-direction: column; gap: 5px;
+  background: var(--kctg-bg-raised);
+  border: 1px solid var(--kctg-border-dim); border-left: 2px solid var(--kctg-russet);
+  border-radius: var(--kctg-radius-card); padding: 8px 10px;
+  transition: border-color var(--kctg-ease), background var(--kctg-ease);
+}
+.kctg-task-card:hover { background: var(--kctg-entry-glass-hover); }
+.kctg-task-card.kctg-status-active   { border-left-color: var(--kctg-success); }
+.kctg-task-card.kctg-status-complete { border-left-color: var(--kctg-amber); }
+.kctg-task-card.kctg-status-failed   { border-left-color: var(--kctg-danger); }
+
+/* Row 1: progress bar + inline labels */
+.kctg-task-card-top {
+  display: flex; align-items: center; gap: 7px;
+}
+/* Row 2: type icon + name + select + trash */
+.kctg-task-card-mid { display: flex; align-items: center; gap: 6px; }
+
+/* Row 3: compact duration — nowrap, no wrapping operators */
+.kctg-duration-row .kctg-input-qty { width: 34px; height: 20px; padding: 0 2px; font-size: .72rem; line-height: 1; flex-shrink: 0; }
+
+/* Bottom row: table + event + actions */
+.kctg-task-bottom-row {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+}
+.kctg-task-bottom-row .kctg-task-table-slot { flex: 1; min-width: 100px; }
+
+/* ── Settings buttons pushed to far right ── */
+.kctg-workers-toolbar .kctg-worker-settings-toggle { margin-left: auto; }
+.kctg-to-toolbar .kctg-to-settings-toggle { margin-left: auto; }
+
+/* ── Single-line truncated hints ── */
+.kctg-config-header .kctg-hint {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1;
+}
+.kctg-inv-header-bar .kctg-inv-info-text {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Shared inline settings panels ── */
+.kctg-workers-toolbar .kctg-btn { flex-shrink: 0; }
+.kctg-settings-panel {
+  background: var(--kctg-bg-panel);
+  border-bottom: 1px solid var(--kctg-border-dim);
+  padding: 7px 12px; flex-shrink: 0;
+}
+/* Inline row: label [input] — no wrap, clips when window too small */
+.kctg-settings-inline-row {
+  display: flex; align-items: center; flex-wrap: nowrap; overflow: hidden; gap: 5px 9px;
+}
+.kctg-settings-lbl {
+  font-size: .72rem; color: var(--kctg-text-dim); white-space: nowrap;
+}
+.kctg-setting-input.kctg-input-qty { width: 29px; height: 20px; padding: 0 2px; font-size: .72rem; line-height: 1; }
+.kctg-settings-sep {
+  width: 1px; height: 13px; background: var(--kctg-border-dim); flex-shrink: 0;
+}
+/* Trade Orders row: 3 equal columns, no wrap, overflow hidden (items disappear when cut) */
+.kctg-to-settings-row {
+  flex-wrap: nowrap; overflow: hidden; align-items: flex-start;
+}
+.kctg-to-settings-row .kctg-settings-item {
+  flex: 0 0 180px; min-width: 0; overflow: hidden;
+}
+/* Item column (trade orders): label+input on top, note below */
+.kctg-settings-item {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.kctg-settings-item-top {
+  display: flex; align-items: center; gap: 5px;
+}
+.kctg-settings-note {
+  font-size: .65rem; color: var(--kctg-text-muted); line-height: 1.3;
+}
+
+/* ── Trade Orders toolbar ── */
+.kctg-to-toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink: 0;
+}
+
+/* ── Per-city table slot ── */
+.kctg-to-city-table-slot {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px;
+  border: 1px dashed var(--kctg-border);
+  border-radius: 3px;
+  background: rgba(0,0,0,0.1);
+  cursor: copy; font-size: .72rem;
+  color: var(--kctg-text-dim);
+  max-width: 120px; overflow: hidden;
+  transition: border-color .15s, background .15s;
+}
+.kctg-to-city-table-slot:hover,
+.kctg-to-city-table-slot.kctg-drag-over { border-color: var(--kctg-gold); background: var(--kctg-gold-glow); }
+.kctg-to-city-table-name {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1; font-size: .7rem;
+}
+
+.kctg-task-workers {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+  padding: 4px 6px;
+  background: var(--kctg-bg-panel); border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+}
+.kctg-workers-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.kctg-worker-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--kctg-bg-input); border: 1px solid var(--kctg-border-dim);
+  border-radius: 3px; padding: 2px 5px; font-size: 0.78rem;
+}
+.kctg-worker-tag img { width: 18px; height: 18px; border-radius: 2px; object-fit: cover; }
+
+.kctg-task-results { display: flex; flex-direction: column; gap: 4px; }
+.kctg-result-tags  { display: flex; flex-wrap: wrap; gap: 4px; }
+.kctg-result-tag {
+  display: inline-block; font-size: 0.75rem;
+  background: var(--kctg-bg-panel); border: 1px solid var(--kctg-border-dim);
+  border-radius: 3px; padding: 2px 7px; color: var(--kctg-text-dim);
+}
+
+/* ── Economy tab ───────────────────────────────────────── */
+/* ── Trade Orders ─────────────────────────────────────────── */
+.kctg-trade-orders-tab {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden;
+}
+
+/* Quest-style two-panel layout */
+.kctg-to-layout {
+  display: flex; flex: 1; min-height: 0; overflow: hidden;
+}
+
+/* ── Left city list panel ── */
+.kctg-to-city-list {
+  width: 190px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  background: rgba(6,5,15,0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-right: 1px solid var(--kctg-border-dim);
+  overflow: hidden;
+}
+.kctg-to-list-toolbar {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: 6px 8px; border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink: 0;
+}
+.kctg-to-settings-panel {
+  padding: 6px 10px; border-bottom: 1px solid var(--kctg-border-dim);
+  display: flex; flex-direction: column; gap: 5px; flex-shrink: 0;
+  background: rgba(0,0,0,0.15);
+}
+/* Combined GM permission toggles (Players Edit / Force) in the settings panel.
+   Stacked full-width so both buttons are identical in size and style. */
+.kctg-to-toggle-item { gap: 5px; }
+.kctg-to-toggle-group { display: flex; flex-direction: column; gap: 5px; }
+.kctg-to-toggle-group .kctg-btn { width: 100%; justify-content: flex-start; }
+/* Trade Orders settings strip: same look as the Workers bar, but WRAPS so the
+   Permission toggle buttons are never clipped off the right edge. */
+.kctg-to-settings-inline-row { flex-wrap: wrap; overflow: visible; row-gap: 7px; }
+.kctg-to-settings-inline-row .kctg-btn-xs { flex-shrink: 0; }
+.kctg-to-city-rows {
+  list-style: none; margin: 0; padding: 6px;
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 1px;
+}
+.kctg-to-city-row {
+  display: flex; align-items: center; gap: 7px;
+  border-radius: var(--kctg-radius); padding: 7px 10px; cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--kctg-ease), border-color var(--kctg-ease);
+  min-width: 0;
+}
+.kctg-to-city-row:hover { background: rgba(245,180,48,0.07); }
+.kctg-to-city-selected {
+  background: var(--kctg-amber-soft) !important;
+  border-color: var(--kctg-amber-line) !important;
+}
+.kctg-to-city-icon { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
+.kctg-to-city-name {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: .82rem; font-weight: 700;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ── Right orders panel ── */
+.kctg-to-orders-panel {
+  flex: 1; min-width: 0; display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.kctg-to-panel-header {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap; row-gap: 6px;
+  padding: 8px 12px; border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink: 0;
+}
+.kctg-to-panel-title {
+  flex: 1 1 auto; min-width: 80px; font-size: .85rem; font-weight: 700;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ── Order tile: one flat flex row per order ── */
+.kctg-to-order-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.kctg-to-order-tile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  background: var(--kctg-bg-raised);
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  font-size: .74rem;
+  min-height: 30px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+/* Icon — also the item drop zone */
+.kctg-to-icon-drop {
+  flex-shrink: 0;
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px dashed var(--kctg-border);
+  border-radius: 3px;
+  background: rgba(0,0,0,0.15);
+  cursor: copy;
+  transition: border-color .15s, background .15s;
+}
+.kctg-to-icon-drop:hover,
+.kctg-to-icon-drop.kctg-drag-over { border-color: var(--kctg-gold); background: var(--kctg-gold-glow); }
+.kctg-to-tile-img { width: 22px; height: 22px; object-fit: contain; border-radius: 2px; display: block; }
+/* Name input — grows to fill space */
+.kctg-to-name-input {
+  flex: 1; min-width: 60px;
+  background: transparent; border: none;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  color: var(--kctg-text); font-size: .74rem; font-weight: 600;
+  padding: 0 2px; height: 24px;
+}
+.kctg-to-name-input:focus { outline: none; border-color: var(--kctg-gold-dim); }
+/* Dim separators */
+.kctg-to-sep-dim { color: var(--kctg-text-muted); font-size: .7rem; flex-shrink: 0; }
+.kctg-to-sep { color: var(--kctg-border); font-size: .8rem; flex-shrink: 0; margin: 0 2px; }
+/* Pays label */
+.kctg-to-pays-label {
+  flex-shrink: 0;
+  font-size: .65rem; text-transform: uppercase; letter-spacing: .05em;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+/* Payment chip — each coin or item payment, inline */
+.kctg-to-pay-chip {
+  display: inline-flex; align-items: center; gap: 2px;
+  flex-shrink: 0;
+}
+/* Small drop zone used inside payment chips */
+.kctg-drop-zone-sm {
+  display: inline-flex; align-items: center; gap: 3px;
+  border: 1px dashed var(--kctg-border-dim);
+  border-radius: 3px; padding: 1px 4px;
+  cursor: copy; font-size: .68rem; color: var(--kctg-text-muted);
+  transition: border-color .12s, background .12s;
+  height: 24px;
+}
+.kctg-drop-zone-sm:hover, .kctg-drop-zone-sm.kctg-drag-over { border-color: var(--kctg-gold); background: var(--kctg-gold-glow); }
+.kctg-drop-zone-sm input { background: transparent; border: none; outline: none; color: var(--kctg-text); font-size: .68rem; }
+/* Delete — fades in on row hover, pushed to far right */
+.kctg-to-tile-del {
+  flex-shrink: 0; margin-left: auto;
+  opacity: 0; transition: opacity .15s;
+}
+.kctg-to-order-tile:hover .kctg-to-tile-del { opacity: 1; }
+/* ── Size normalisation: every interactive element in a tile row is 24px tall, .72rem ── */
+.kctg-to-order-tile .kctg-input-qty,
+.kctg-to-order-tile .kctg-select-sm,
+.kctg-to-order-tile .kctg-btn-xs,
+.kctg-to-order-tile .kctg-drop-zone-sm,
+.kctg-to-order-tile .kctg-to-name-input {
+  height: 20px;
+  font-size: .72rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  line-height: 18px;
+}
+.kctg-to-order-tile .kctg-input-qty  { padding: 0 4px; }
+.kctg-to-order-tile .kctg-select-sm  { padding: 0 20px 0 5px; }
+.kctg-to-order-tile .kctg-btn-xs     { padding: 0 6px; display: inline-flex; align-items: center; }
+.kctg-to-order-tile .kctg-drop-zone-sm { height: 24px; font-size: .72rem; }
+/* Icon image inside the drop zone and inside payment chips — same size */
+.kctg-to-tile-img,
+.kctg-to-pay-img { width: 20px; height: 20px; object-fit: contain; border-radius: 2px; display: block; }
+.kctg-to-row-img  { width: 18px; height: 18px; object-fit: contain; border-radius: 2px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+/* ── City accordion (new design) ── */
+.kctg-to-city-toggle {
+  display: flex; align-items: center; gap: 7px;
+  flex: 1; min-width: 0;
+  background: none; border: none; cursor: pointer; text-align: left;
+  color: inherit; padding: 0;
+}
+.kctg-to-chevron { font-size: .72rem; color: var(--kctg-text-muted); flex-shrink: 0; }
+.kctg-to-city-pip { margin-left: 2px; }
+.kctg-to-city--collapsed .kctg-to-city-header { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+/* ── Order card (expanded view) ── */
+.kctg-to-order-list {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px 12px;
+}
+.kctg-to-order-card {
+  background: var(--kctg-bg-raised);
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  padding: 8px 10px;
+  flex-shrink: 0;
+  /* Size container so the NEEDS/PAYS split below can react to the card's own
+     width instead of the window's. */
+  container-type: inline-size;
+}
+/* In a narrow card the 50/50 split starves the item labels down to nothing
+   (qty input, stock chip and remove button are fixed-width). Stack the two
+   columns instead so every row keeps a readable label. */
+@container (max-width: 460px) {
+  .kctg-to-order-split { grid-template-columns: 1fr; }
+}
+.kctg-to-order-header {
+  display: flex; align-items: center; gap: 5px; margin-bottom: 5px;
+}
+.kctg-to-order-collapse {
+  flex-shrink: 0; padding: 2px 4px;
+  color: var(--kctg-text-muted); cursor: pointer;
+}
+.kctg-to-order-name {
+  flex: 1; background: transparent; border: none;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  color: var(--kctg-text); font-size: .82rem; font-weight: 700;
+  padding: 0 2px; height: 22px;
+}
+.kctg-to-order-name:focus { outline: none; border-color: var(--kctg-gold-dim); }
+.kctg-to-order-desc {
+  width: 100%; box-sizing: border-box;
+  background: var(--kctg-bg-input); border: 1px solid var(--kctg-border-dim);
+  color: var(--kctg-text); font-size: .74rem;
+  border-radius: 3px; padding: 4px 6px; resize: vertical;
+  min-height: 36px; margin-bottom: 6px;
+}
+.kctg-to-order-desc:focus { outline: none; border-color: var(--kctg-gold-dim); }
+.kctg-to-order-collapsed .kctg-to-order-desc { margin-bottom: 0; }
+
+/* ── 50/50 split ── */
+.kctg-to-order-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+/* min-width:0 lets each grid column shrink below its content's intrinsic width,
+   so the fixed-width pay inputs + "Add currency" stay inside the card border. */
+.kctg-to-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+/* Pay/need rows wrap instead of pushing their inputs past the edge. */
+.kctg-to-split-row { flex-wrap: wrap; }
+.kctg-to-col-header {
+  font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--kctg-text-dim); margin-bottom: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.kctg-to-split-row {
+  display: flex; align-items: center; gap: 4px;
+  font-size: .74rem;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--kctg-border-dim);
+}
+.kctg-to-item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Stock indicator on a Need row ── */
+.kctg-to-have {
+  font-size: .64rem; font-weight: 700; white-space: nowrap;
+  padding: 1px 6px; border-radius: var(--kctg-radius-pill);
+  flex-shrink: 0;
+}
+.kctg-to-have-ok  { color: var(--kctg-success); background: rgba(90,173,90,0.12); }
+.kctg-to-have-low { color: var(--kctg-danger);  background: rgba(201,60,88,0.12); }
+
+/* ── Fulfil footer ── */
+.kctg-to-order-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed var(--kctg-line);
+}
+.kctg-to-fulfill:disabled { opacity: .5; cursor: not-allowed; }
+.kctg-to-force-fulfill { color: var(--kctg-text-muted); }
+.kctg-to-force-fulfill:hover { color: var(--kctg-amber); border-color: var(--kctg-amber); }
+
+/* ── Fulfilled order: kept as a reopenable contract ── */
+.kctg-to-order-fulfilled { opacity: 0.72; }
+.kctg-to-order-fulfilled .kctg-to-order-name { color: var(--kctg-text-muted); }
+.kctg-to-fulfilled-dot { color: var(--kctg-success); font-size: 0.74rem; flex-shrink: 0; }
+.kctg-to-fulfilled-tag {
+  display: inline-flex; align-items: center; gap: 5px; margin-right: auto;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--kctg-success);
+}
+
+/* ── Read-only order view (players: orders are GM-managed) ── */
+.kctg-to-order-name-static {
+  flex: 1; min-width: 0; font-size: 0.85rem; font-weight: 600;
+  color: var(--kctg-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.kctg-to-order-desc-static {
+  font-size: 0.74rem; color: var(--kctg-text-dim); font-style: italic;
+  margin: 2px 0 4px; line-height: 1.5;
+}
+.kctg-to-static-qty { font-size: 0.78rem; font-weight: 700; color: var(--kctg-text); min-width: 18px; }
+.kctg-to-static-pay { font-size: 0.74rem; font-weight: 700; color: var(--kctg-gold-light); }
+
+/* ── Empty state, matches the Overview "Participation" / date line ── */
+.kctg-to-empty {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 0.72rem; font-style: italic;
+  color: var(--kctg-text-muted); text-align: center; padding: 10px 0;
+}
+.kctg-to-empty strong { color: var(--kctg-gold-light); font-style: normal; font-weight: 700; }
+
+/* ── Table view ── */
+.kctg-to-table {
+  width: 100%; border-collapse: collapse; font-size: .74rem;
+  margin-bottom: 4px;
+}
+.kctg-to-table th {
+  padding: 4px 6px; text-align: left;
+  font-size: .65rem; font-weight: 700; text-transform: uppercase;
+  color: var(--kctg-text-muted); border-bottom: 1px solid var(--kctg-border-dim);
+}
+.kctg-to-table td { padding: 4px 6px; vertical-align: top; }
+.kctg-to-table-row { border-bottom: 1px solid var(--kctg-border-dim); }
+.kctg-to-table-row:hover { background: var(--kctg-bg-raised); }
+.kctg-to-table-item { display: flex; align-items: center; gap: 3px; margin-bottom: 2px; }
+.kctg-to-th-needs, .kctg-to-th-pays { width: 34%; }
+
+/* ── Tracker item rows ── */
+.kctg-titem-list {
+  display: flex; flex-direction: column; gap: 3px;
+  margin: 4px 0;
+}
+.kctg-titem-row {
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 4px;
+  background: var(--kctg-bg-panel); border: 1px solid var(--kctg-border-dim);
+  border-radius: 3px; font-size: .74rem;
+}
+.kctg-titem-img { width: 20px; height: 20px; object-fit: contain; border-radius: 2px; flex-shrink: 0; }
+.kctg-titem-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kctg-titem-drop-zone {
+  display: flex; align-items: center; gap: 4px;
+  width: 100%;
+  border: 1px dashed var(--kctg-border-dim);
+  border-radius: 3px; padding: 3px 7px;
+  font-size: .68rem; color: var(--kctg-text-muted); cursor: copy;
+  transition: border-color .12s, background .12s;
+}
+.kctg-titem-drop-zone:hover,
+.kctg-titem-drop-zone.kctg-drag-over { border-color: var(--kctg-gold); background: var(--kctg-gold-glow); }
+
+/* ── Tracker toolbar ── */
+.kctg-tracker-toolbar { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.kctg-tracker-title { flex: 1; font-size: .78rem; font-weight: 700; color: var(--kctg-text-dim); }
+
+/* ── Tracked item inventory qty (read-only, synced from workshop stock) ── */
+.kctg-titem-inv-qty {
+  font-size: .78rem; font-weight: 700;
+  color: var(--kctg-text-dim); flex-shrink: 0;
+}
+.kctg-titem-done { color: var(--kctg-success) !important; }
+
+
+
+
+/* ════════════════════════════════════════════════════════
+   TRADE MAP
+   ════════════════════════════════════════════════════════ */
+
+.kctg-trade-map-inner { gap: 0; }
+/* When map is embedded as a tab inside the workshop hub */
+.kctg-map-tab-embed { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.kctg-map-toolbar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px;
+  background: var(--kctg-bg-panel); border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink: 0; flex-wrap: nowrap; overflow: hidden;
+}
+/* Edit toggle stays visible first when toolbar clips */
+.kctg-map-toggle-edit { order: -1; flex-shrink: 0; }
+.kctg-map-toolbar .kctg-btn    { flex-shrink: 0; }
+.kctg-map-toolbar .kctg-zoom-controls { flex-shrink: 0; }
+.kctg-toolbar-sep { width: 1px; height: 20px; background: var(--kctg-border-dim); margin: 0 2px; }
+.kctg-map-hint { font-size: 0.75rem; color: var(--kctg-text-dim); flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Viewport — clips, handles mouse events for pan */
+.kctg-map-area {
+  flex: 1; position: relative; overflow: hidden;
+  background: var(--kctg-bg-panel);
+  min-height: 300px;
+  cursor: grab;
+  user-select: none;
+  border-radius: var(--kctg-radius);
+  margin: 6px;
+  border: 1px solid var(--kctg-border-dim);
+}
+.kctg-map-area:active { cursor: grabbing; }
+
+/* Inner canvas — gets the transform for panning + holds the bg image */
+.kctg-map-canvas {
+  position: absolute;
+  background: var(--kctg-bg-panel) center/cover no-repeat;
+  /* Smooth fade-in after zoom is calculated */
+  transition: opacity 0.3s ease;
+}
+/* Instant hide during load — no transition so pins never briefly appear at wrong scale */
+.kctg-map-canvas.kctg-map-loading {
+  opacity: 0;
+  transition: none;  /* instant — don't animate to invisible, just snap there */
+}
+
+.kctg-map-svg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+/* ── Location pins ─────────────────────────────────────── */
+.kctg-map-pin {
+  position: absolute;
+  transform-origin: center center;
+  display: flex; flex-direction: column; align-items: center;
+  cursor: default; user-select: none; z-index: 10;
+}
+.kctg-pin-edit { cursor: pointer; }
+.kctg-pin-img-wrap {
+  position: relative;
+  display: inline-block;
+  width: 32px; height: 32px;
+}
+.kctg-map-pin img {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--pin-rim, rgba(245,180,48,0.5));
+  background: var(--pin-bg, var(--kctg-bg-panel)); object-fit: contain;
+  padding: 3px; box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  pointer-events: none;
+}
+.kctg-pin-tint {
+  position: absolute; inset: 3px;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+/* Quest status badges on map pins */
+.kctg-pin-quest-badge {
+  position:  absolute; top: -5px; right: -5px;
+  width: 14px; height: 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.50rem; font-weight: 700;
+  border: 1.5px solid var(--kctg-bg); pointer-events: none;
+}
+.kctg-pin-quest-active { background: #f5b430; color: #0b0a13; }
+.kctg-pin-quest-done   { background: #5aad5a; color: #fff; }
+.kctg-pin-edit:hover img, .kctg-pin-pending img {
+  border-color: var(--kctg-gold);
+  box-shadow: 0 0 8px rgba(245,180,48,0.5);
+}
+.kctg-pin-pending img { box-shadow: 0 0 0 3px rgba(245,180,48,0.4); }
+
+.kctg-pin-label {
+  font-size: 0.68rem; font-weight: 700; color: var(--kctg-gold-light);
+  text-shadow: 0 1px 4px #000, 0 0 8px #000;
+  white-space: nowrap; margin-top: 2px; pointer-events: none;
+}
+.kctg-pin-popover {
+  position: absolute; top: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--kctg-bg-raised); border: 1px solid var(--kctg-border);
+  border-radius: var(--kctg-radius); padding: 6px 8px;
+  display: flex; flex-direction: column; gap: 5px;
+  z-index: 20; min-width: 160px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+}
+.kctg-pin-btn-row { display: flex; gap: 5px; }
+
+/* Home pin — glow and rim both driven by CSS custom properties */
+.kctg-pin-home .kctg-pin-img-wrap img {
+  filter: drop-shadow(0 0 5px var(--pin-glow, var(--kctg-gold)));
+  outline: 2px solid var(--pin-rim, var(--kctg-gold));
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+/* ── Traveling workers ─────────────────────────────────── */
+.kctg-traveler {
+  position: absolute;
+  transform-origin: center center;
+  z-index: 15; pointer-events: none;
+}
+.kctg-traveler img {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--kctg-gold);
+  box-shadow: 0 0 6px rgba(245,180,48,0.6);
+  object-fit: cover;
+  animation: kctg-worker-pulse 2s ease-in-out infinite;
+}
+@keyframes kctg-worker-pulse {
+  0%,100% { box-shadow: 0 0 4px rgba(245,180,48,0.5); }
+  50%      { box-shadow: 0 0 12px rgba(245,180,48,0.9); }
+}
+/* Small task-type badge beneath the avatar */
+.kctg-traveler-badge {
+  margin-top: -5px;
+  background: var(--kctg-gold);
+  color: var(--kctg-bg);
+  border-radius: 50%;
+  width: 13px; height: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.42rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+/* At destination — bright pulse to signal they've arrived */
+.kctg-traveler-atDestination img {
+  border-color: var(--kctg-gold-light);
+  animation: kctg-worker-arrived 1.5s ease-in-out infinite;
+}
+.kctg-traveler-atDestination .kctg-traveler-badge {
+  background: var(--kctg-gold-light);
+}
+@keyframes kctg-worker-arrived {
+  0%,100% { box-shadow: 0 0 6px rgba(245,180,48,0.6); transform: scale(1); }
+  50%      { box-shadow: 0 0 18px rgba(245,180,48,1);  transform: scale(1.12); }
+}
+/* Returning — blue tint */
+.kctg-traveler-returning img {
+  border-color: #5a9ad0;
+  box-shadow: 0 0 6px rgba(90,154,208,0.7);
+  animation: kctg-worker-return 2s ease-in-out infinite;
+}
+.kctg-traveler-returning .kctg-traveler-badge {
+  background: #5a9ad0; color: #fff;
+}
+@keyframes kctg-worker-return {
+  0%,100% { box-shadow: 0 0 4px rgba(90,154,208,0.5); }
+  50%      { box-shadow: 0 0 12px rgba(90,154,208,0.9); }
+}
+/* Active route — marching-ants dashes only; animation is enough to distinguish */
+.kctg-route-active {
+  opacity: 1 !important;
+  stroke-dasharray: 3 1.5 !important;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 2px rgba(245,180,48,0.6));
+  animation: kctg-route-march 0.9s linear infinite;
+}
+@keyframes kctg-route-march {
+  to { stroke-dashoffset: -4.5; }
+}
+
+/* ── Map empty hint ────────────────────────────────────── */
+.kctg-map-empty-hint {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--kctg-text-muted); font-size: 0.9rem; gap: 8px;
+  pointer-events: none;
+}
+
+/* ── Route panel ───────────────────────────────────────── */
+.kctg-route-panel {
+  padding: 8px 12px;
+  border-top: 1px solid var(--kctg-border-dim);
+  background: #0a0a0a; flex-shrink: 0;
+  max-height: 120px; overflow-y: auto;
+}
+.kctg-route-list-row {
+  display: flex; align-items: center; gap: 6px; padding: 3px 0;
+  border-bottom: 1px solid var(--kctg-border-dim);
+}
+.kctg-route-list-row:last-child { border-bottom: none; }
+
+/* ════════════════════════════════════════════════════════
+   EVENT TABLE CONFIG
+   ════════════════════════════════════════════════════════ */
+
+.kctg-event-config-inner { padding: 0; }
+.kctg-evtable-list {
+  list-style: none; margin: 0; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.kctg-evtable-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.kctg-evtable-label {
+  font-size: 0.82rem; font-weight: 600; width: 110px; flex-shrink: 0;
+  color: var(--kctg-text-dim);
+}
+.kctg-evtable-row .kctg-drop-zone { flex: 1; }
+
+/* ─── Banner: contain not cover ───────────────────────── */
+
+/* ─── Task timer strip ─────────────────────────────────── */
+.kctg-task-timer {
+  display: flex; align-items: center; gap: 6px;
+  padding: 3px 6px;
+  background: var(--kctg-bg-panel);
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  font-size: 0.74rem; color: var(--kctg-text-dim);
+}
+.kctg-timer-started { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kctg-timer-elapsed {
+  font-size: 0.72rem; font-weight: 700;
+  background: var(--kctg-bg-input); border: 1px solid var(--kctg-border-dim);
+  border-radius: 3px; padding: 1px 6px; white-space: nowrap;
+}
+.kctg-badge-active-pill {
+  background: rgba(90,173,90,0.18) !important;
+  border-color: rgba(90,173,90,0.4) !important;
+  color: var(--kctg-success) !important;
+}
+
+/* ─── Collect row ──────────────────────────────────────── */
+.kctg-collect-row {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+  padding: 5px 8px;
+  background: rgba(245,180,48,0.06);
+  border: 1px solid rgba(245,180,48,0.25);
+  border-radius: var(--kctg-radius);
+}
+.kctg-collect-label { font-size: 0.76rem; font-weight: 700; color: var(--kctg-gold-dim); white-space: nowrap; }
+
+/* ─── Inventory tab ────────────────────────────────────── */
+.kctg-inventory-tab { overflow: hidden; }
+
+/* ─── Map canvas: remove fixed width/height (set by JS) ── */
+.kctg-map-canvas { width: 100%; height: 100%; }
+
+/* ══════════════════════════════════════════════════════════
+   OVERVIEW DOCK
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-ws-name-input.kctg-input-title {
+  width: 100%;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--kctg-gold-light);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  border-radius: 0;
+  padding: 4px 2px;
+  font-family: var(--kctg-font);
+  -webkit-text-fill-color: currentColor;
+}
+.kctg-ws-name-input.kctg-input-title:focus { border-color: var(--kctg-amber); outline: none; }
+.kctg-ws-title {
+  font-size: 1.1rem; font-weight: 700; font-family: var(--kctg-font); display: block; padding: 4px 2px;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* Banner: contain not stretch */
+.kctg-banner-area:not(.kctg-banner-empty) {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #080808;
+}
+
+.kctg-overview-dock {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+  align-items: flex-start;
+}
+
+/* ── Workshop actor slot ─────────────────────────────────── */
+.kctg-ws-actor-panel { flex-shrink: 0; }
+
+/* ── Day panel ───────────────────────────────────────────── */
+.kctg-day-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kctg-day-label {
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.kctg-day-stepper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.kctg-day-num {
+  width: 68px !important;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--kctg-gold-light);
+}
+.kctg-fine-row {
+  display: flex; gap: 6px;
+}
+.kctg-fine-field {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.kctg-fine-field label { font-size: 0.65rem; color: var(--kctg-text-dim); text-transform: uppercase; }
+.kctg-fine-field input { width: 54px; text-align: center; }
+
+.kctg-opened-line {
+  font-size: 0.78rem;
+  color: var(--kctg-text-dim);
+  line-height: 1.5;
+  border-top: 1px solid var(--kctg-border-dim);
+  padding-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.kctg-opened-line strong { color: var(--kctg-gold-light); }
+
+/* ══════════════════════════════════════════════════════════
+   WORKER GROUPS
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-group-list { list-style: none; margin: 0; padding: 0 14px 6px; display: flex; flex-direction: column; gap: 6px; }
+.kctg-group-card {
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  background: var(--kctg-bg-raised);
+  overflow: hidden;
+}
+.kctg-group-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px;
+  background: rgba(245,180,48,0.06);
+  border-bottom: 1px solid var(--kctg-border-dim);
+}
+.kctg-group-members {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 5px;
+  padding: 6px 10px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TASK DURATION & PROGRESS
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-duration-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 6px;
+  background: var(--kctg-bg-panel);
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  flex-wrap: nowrap; overflow: hidden;
+}
+.kctg-dur-lbl { font-size: .68rem; color: var(--kctg-text-dim); white-space: nowrap; flex-shrink: 0; }
+.kctg-dur-arrow { font-size: 0.8rem; color: var(--kctg-text-muted); flex-shrink: 0; line-height: 1; }
+.kctg-dur-eq    { font-size: 0.8rem; color: var(--kctg-gold-dim);   flex-shrink: 0; line-height: 1; }
+.kctg-dur-value { font-size: 0.8rem; font-weight: 700; color: var(--kctg-text); white-space: nowrap; flex-shrink: 0; }
+.kctg-gold-text { color: var(--kctg-gold-light) !important; }
+
+/* Progress bar */
+.kctg-progress-wrap {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.kctg-progress-bar {
+  height: 10px;
+  background: var(--kctg-bg-input);
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: 5px;
+  overflow: visible;
+  position: relative;
+}
+.kctg-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3a7a3a, var(--kctg-success));
+  border-radius: 5px;
+  transition: width 0.4s ease;
+  position: relative;
+}
+.kctg-fill-complete { background: linear-gradient(90deg, #8a6e30, var(--kctg-gold)) !important; }
+.kctg-progress-phases { position: absolute; inset: 0; pointer-events: none; }
+.kctg-phase-mark {
+  position: absolute; top: -3px; bottom: -3px;
+  width: 2px; background: rgba(245,180,48,0.6);
+  border-radius: 1px;
+  transform: translateX(-50%);
+}
+.kctg-phase-return { background: rgba(170,140,60,0.4); }
+.kctg-progress-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--kctg-text-dim);
+}
+.kctg-days-left {
+  color: var(--kctg-success);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════
+   INVENTORY TAB
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-inventory-tab { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
+
+/* ── Inventory header bar ── */
+.kctg-inv-header-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;
+  padding: 6px 10px; background: var(--kctg-bg-raised);
+  border-bottom: 1px solid var(--kctg-border-dim); flex-shrink: 0;
+  font-size: 0.78rem; color: var(--kctg-text-dim);
+}
+
+/* ── Inventory list (rows) — mirrors the Merchant Inventory style ── */
+.kctg-inv-grid {
+  list-style: none; margin: 0;
+  padding: 2px 10px 4px;
+  display: flex; flex-direction: column; gap: 2px;
+  flex-shrink: 0;
+}
+.kctg-inv-card {
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  padding: 3px 14px;
+  border: none; border-radius: 0;
+  border-bottom: 1px solid var(--kctg-line);
+  font-size: 0.77rem;
+  min-height: 23px;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--kctg-ease);
+  list-style: none; margin: 0;
+}
+.kctg-inv-card:last-child { border-bottom: none; }
+.kctg-inv-card:hover { background: rgba(245,180,48,0.04); }
+.kctg-inv-card .kctg-item-img { width: 18px; height: 18px; }
+.kctg-inv-card .kctg-item-name {
+  font-weight: 600; color: var(--kctg-text);
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.kctg-inv-price {
+  font-size: 0.74rem; color: var(--kctg-amber); font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+}
+.kctg-item-qty { color: var(--kctg-amber); font-weight: 600; white-space: nowrap; font-size: 0.78rem; flex-shrink: 0; }
+.kctg-inv-card .kctg-btn-icon { width: 18px; height: 18px; font-size: 0.70rem; flex-shrink: 0; }
+.kctg-inv-card .kctg-btn-xs    { padding: 1px 4px; font-size: 0.66rem; min-height: 16px; flex-shrink: 0; }
+.kctg-inv-card .kctg-inv-remove { opacity: 0; transition: opacity .15s; }
+.kctg-inv-card:hover .kctg-inv-remove { opacity: 1; }
+
+/* Drag handle — revealed on row hover */
+.kctg-inv-drag-handle {
+  font-size: 0.60rem; color: var(--kctg-text-muted);
+  opacity: 0.30; cursor: grab; flex-shrink: 0;
+  transition: opacity var(--kctg-ease);
+}
+.kctg-inv-card:hover .kctg-inv-drag-handle { opacity: 0.65; }
+.kctg-inv-card.kctg-dragging { opacity: 0.38; }
+
+/* ── Inventory folders ── */
+.kctg-inv-folder-section {
+  margin: 0 10px 4px;
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  overflow: hidden; flex-shrink: 0;
+}
+.kctg-inv-folder-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 10px; background: var(--kctg-bg-raised);
+  border-bottom: 1px solid var(--kctg-border-dim); font-size: 0.82rem;
+}
+.kctg-inv-drop-zone.kctg-drag-over {
+  background: var(--kctg-gold-glow) !important;
+  outline: 2px dashed var(--kctg-gold-dim);
+  outline-offset: -2px; border-radius: var(--kctg-radius);
+}
+.kctg-inv-folder-empty-drop {
+  display: flex; align-items: center; justify-content: center;
+  height: 50px; color: var(--kctg-text-muted); font-size: 0.76rem;
+  font-style: italic; border-radius: var(--kctg-radius);
+  border: 1px dashed var(--kctg-border-dim); margin: 6px 10px;
+}
+.kctg-inv-ungrouped-drop {
+  min-height: 32px;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   OVERVIEW — opened tagline
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-ws-name-row {
+  padding: 8px 14px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.kctg-opened-tagline {
+  font-size: 0.78rem;
+  color: var(--kctg-text-dim);
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kctg-overview-date {
+  font-style: italic;
+  color: var(--kctg-gold-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.kctg-opened-tagline strong { color: var(--kctg-gold-light); }
+.kctg-coinage-line {
+  font-size: 0.76rem; color: var(--kctg-text-dim);
+  margin: 0; padding: 2px 0 6px;
+}
+.kctg-coinage-line strong { color: var(--kctg-gold-light); }
+.kctg-inv-coinage-text {
+  font-size: 0.72rem; color: var(--kctg-gold-light);
+  font-weight: 600;
+}
+/* ── Coin chips in inventory header ── */
+.kctg-coin-chip {
+  display: inline-flex; align-items: center;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 3px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.kctg-coin-gp { background: rgba(245,180,48,0.18); color: var(--kctg-gold); border: 1px solid rgba(245,180,48,0.35); }
+.kctg-coin-sp { background: rgba(180,180,180,0.12); color: #b0b8c0; border: 1px solid rgba(180,180,180,0.3); }
+.kctg-coin-cp { background: rgba(150,100,60,0.14); color: #c09060; border: 1px solid rgba(150,100,60,0.3); }
+
+/* ══════════════════════════════════════════════════════════
+   WORKERS TAB — roster grid
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 180px);
+  /* Shared roster card height: the retainer sets the canonical size and worker
+     cards match it (not the other way around). */
+  --kctg-roster-card-h: 187px;
+  align-items: start;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  /* Isolate from the art layer's mix-blend-mode:luminosity — prevents the
+     luminosity blend from reaching into this compositing group              */
+  isolation: isolate;
+  flex-shrink: 0; /* prevents flex parent from collapsing grid rows */
+}
+
+/* Retainer card — spans the first row position but same width as workers */
+.kctg-retainer-card {
+  border: 1px solid rgba(245,180,48,0.35);
+  border-radius: var(--kctg-radius);
+  background: rgba(245,180,48,0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.kctg-retainer-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  background: rgba(245,180,48,0.08);
+  border-bottom: 1px solid rgba(245,180,48,0.2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.kctg-retainer-label { color: var(--kctg-gold-dim); }
+.kctg-ws-actor-slot {
+  flex: 1;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 8px;
+  font-size: 0.74rem;
+  color: var(--kctg-text-dim);
+  text-align: center;
+  position: relative;
+  cursor: default;
+  /* remove old border since parent card provides it */
+  border: none !important;
+  background: transparent !important;
+}
+.kctg-ws-actor-slot.kctg-slot-filled img {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--kctg-gold-dim);
+}
+.kctg-ws-actor-name { font-weight: 700; color: var(--kctg-gold-light); font-size: 0.78rem; line-height: 1.3; }
+.kctg-ws-actor-clear {
+  position: absolute; top: 4px; right: 4px;
+  opacity: 0; transition: opacity 0.15s;
+}
+.kctg-retainer-card:hover .kctg-ws-actor-clear,
+.kctg-ws-actor-slot:hover .kctg-ws-actor-clear { opacity: 1; }
+
+/* Worker cards in the grid — portrait card: silhouette art behind, name at top,
+   morale/loyalty pinned to the bottom over a scrim. */
+.kctg-worker-card.kctg-grid-card {
+  border: 1px solid var(--kctg-border-dim); border-left: 2px solid var(--kctg-russet);
+  border-radius: var(--kctg-radius-card);
+  background: var(--kctg-bg-raised);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  /* Match the retainer's canonical height */
+  height: var(--kctg-roster-card-h);
+  position: relative;
+  /* overflow:hidden + position:relative = Chromium compositing layer separation.
+     Retainer card and inv-card both have this combo and work correctly;
+     without it, the sibling art layer's mix-blend-mode bleeds through.       */
+  overflow: hidden;
+}
+/* Card content sits above the silhouette art */
+.kctg-worker-card.kctg-grid-card > .kctg-worker-footer { position: relative; z-index: 1; }
+/* Own isolation context so the art's luminosity blend resolves against the card */
+.kctg-worker-card.kctg-grid-card { isolation: isolate; }
+
+/* Faded portrait silhouette — same treatment as the tab background art layer
+   (luminosity + low opacity) so it reads as a subtle backdrop, not a portrait. */
+.kctg-worker-art {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top center;
+  display: block; pointer-events: none; z-index: 0;
+  opacity: 0.35;
+  mix-blend-mode: luminosity;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.25) 100%);
+  mask-image:         linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.25) 100%);
+}
+
+/* Header (WORKER tag + name) + stats clustered at the bottom over a scrim */
+.kctg-worker-footer {
+  margin: auto -8px -8px;            /* push to bottom, full-bleed sides/bottom */
+  padding: 16px 8px 8px;
+  display: flex; flex-direction: column; gap: 5px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.55) 30%, rgba(0,0,0,0.88) 70%);
+}
+/* Centered "WORKER" tag + name, mirroring the retainer tag/name styling */
+.kctg-worker-header {
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  text-align: center; pointer-events: none;
+}
+.kctg-worker-tag-lbl {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.kctg-worker-name-text {
+  font-size: 0.82rem; font-weight: 700; color: var(--kctg-gold-light);
+  text-shadow: 0 1px 4px #000; line-height: 1.2;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Label hard-left, input hard-right */
+.kctg-worker-card.kctg-grid-card .kctg-slider-row { justify-content: space-between; }
+
+/* Top-right action cluster — small square edit + delete buttons, shown on hover */
+.kctg-worker-actions {
+  position: absolute; top: 5px; right: 5px; z-index: 2;
+  display: flex; gap: 3px;
+}
+.kctg-worker-actions button {
+  width: 17px; height: 17px; min-width: 0; min-height: 0; padding: 0; flex: 0 0 auto;
+  box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+  border: none; border-radius: 3px; cursor: pointer; font-size: 0.6rem;
+  background: rgba(0,0,0,0.5); color: var(--kctg-text-dim);
+  opacity: 0; transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+.kctg-worker-card.kctg-grid-card:hover .kctg-worker-actions button { opacity: 1; }
+.kctg-worker-edit:hover { background: var(--kctg-gold-dim); color: #fff; }
+.kctg-worker-clear { color: var(--kctg-danger); }
+.kctg-worker-clear:hover { background: var(--kctg-danger); color: #fff; }
+
+/* Workers toolbar under the grid */
+.kctg-drop-inline {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: 150px;
+  max-width: 220px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.kctg-drop-inline span {
+  display: inline;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TASKS TAB — day strip
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-day-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--kctg-bg-raised);
+  border-bottom: 1px solid var(--kctg-border-dim);
+  flex-wrap: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.kctg-day-strip-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; flex-shrink: 0;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+/* Day number in the Tasks strip sits tight beside the "Day" label. The wide,
+   centred day-counter styling stays reserved for the editable input elsewhere. */
+.kctg-day-strip span.kctg-day-num {
+  width: auto !important; min-width: 0 !important; height: auto !important;
+  padding: 0 !important; text-align: left;
+  font-size: 0.72rem !important; font-weight: 700; color: var(--kctg-gold-light);
+}
+/* World date label matches the small button text in the same bar */
+.kctg-day-strip .kctg-world-date { font-size: 0.70rem; color: var(--kctg-text-dim); }
+
+/* ══════════════════════════════════════════════════════════
+   WORKERS TAB — scrollable, toolbar-at-top
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-workers-tab {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  /* position:relative makes this a positioned element so it paints AFTER the
+     absolutely-positioned art layer (same z-index:auto, later DOM = on top)  */
+  position: relative;
+}
+
+/* Toolbar fixed at top, doesn't scroll */
+.kctg-workers-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--kctg-bg-raised);
+  border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RETAINER CARD — lives in the roster grid alongside workers
+   ══════════════════════════════════════════════════════════ */
+
+/* Override the old slot styles for the retainer */
+.kctg-retainer-card.kctg-ws-actor-slot {
+  position: relative;
+  padding: 0 !important;
+  border: 1px solid rgba(245,180,48,0.4) !important;
+  background: var(--kctg-bg-raised) !important;
+  border-radius: var(--kctg-radius);
+  overflow: hidden;
+  /* Width matches grid column; height stretches to match the worker cards in the
+     same row so the row height is set by the workers (not the retainer), eliminating
+     the visual gap that appeared below the first worker card */
+  width: 180px !important;
+  /* Canonical roster card height. The retainer holds this size; worker cards match
+     it. Fixed (not stretch) so a slightly taller worker can't drag the retainer up. */
+  height: var(--kctg-roster-card-h) !important;
+  min-height: var(--kctg-roster-card-h) !important;
+  max-width: 180px !important;
+  align-self: start !important;
+  justify-self: start !important;
+  cursor: default;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.kctg-retainer-card.kctg-slot-filled {
+  border-color: var(--kctg-gold-dim) !important;
+}
+
+/* DH-style faded portrait — fills card, masked from top fading down */
+.kctg-retainer-art {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+  border-radius: 0 !important;
+  border: none !important;
+  padding: 0 !important;
+  display: block !important;
+  /* Full opacity, full color — no luminosity desaturation */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.55) 45%, transparent 82%);
+  mask-image:         linear-gradient(to bottom, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.55) 45%, transparent 82%);
+}
+
+/* ── Tab-level art layer (workers + inventory backgrounds) ──────────────── */
+.kctg-ws-art-layer {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  -webkit-mask-image:
+    linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, transparent 100%),
+    linear-gradient(to left, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.40) 45%, transparent 80%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, transparent 100%),
+    linear-gradient(to left, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.40) 45%, transparent 80%);
+  mask-composite: intersect;
+  opacity: 0.35;
+  mix-blend-mode: luminosity;
+}
+
+/* Name + label overlay at bottom of image */
+.kctg-retainer-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0.92));
+  padding: 18px 8px 7px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+.kctg-retainer-tag {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  background: var(--kctg-ribbon); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.kctg-retainer-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--kctg-gold-light);
+  text-shadow: 0 1px 4px #000;
+  text-align: center;
+}
+
+/* Empty state inside retainer card */
+.kctg-retainer-hint { font-size: 0.72rem; color: var(--kctg-text-muted); margin-top: 2px; }
+.kctg-retainer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 16px 10px;
+  color: var(--kctg-text-dim);
+  font-size: 0.76rem;
+  text-align: center;
+  width: 100%;
+  min-height: var(--kctg-roster-card-h);
+}
+/* Silhouette inside retainer empty slot — explicit 52px, amber ghost */
+/* Retainer silhouette — max specificity to beat competing drop-zone/slot styles */
+.kctg-retainer-card .kctg-retainer-empty .kctg-silhouette {
+  display: flex !important;
+  width: 48px !important; height: 48px !important;
+  min-width: 48px !important; min-height: 48px !important;
+  margin-bottom: 6px; flex-shrink: 0 !important;
+  opacity: 0.40 !important;
+  color: var(--kctg-amber) !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.kctg-retainer-card .kctg-retainer-empty .kctg-silhouette i {
+  font-size: 1.8rem !important;
+  color: var(--kctg-amber) !important;
+  -webkit-text-fill-color: var(--kctg-amber) !important;
+  display: block !important;
+}
+.kctg-retainer-empty .kctg-retainer-tag { letter-spacing: 0.12em; }
+
+/* Calendar icon in day strip — gradient text, overrides inline style */
+.kctg-day-strip i.fa-calendar-alt {
+  background: var(--kctg-ribbon) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  flex-shrink: 0;
+}
+
+/* × clear button, top-right of card */
+.kctg-retainer-clear {
+  position: absolute !important;
+  top: 5px; right: 5px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 5;
+}
+.kctg-retainer-card:hover .kctg-retainer-clear { opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════
+   TRADE MAP — zoom controls
+   ══════════════════════════════════════════════════════════ */
+.kctg-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+}
+.kctg-zoom-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--kctg-text-dim);
+  min-width: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+/* Zoom +/- buttons: same height as other kctg-btn-sm, just narrow */
+.kctg-zoom-controls .kctg-btn-sm {
+  min-width: 26px;
+  padding: 4px 6px;
+  font-size: 0.78rem;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Route travel-days number input — square, compact, matches tasks tab */
+.kctg-route-days-input {
+  width: 26px !important;
+  height: 26px !important;
+  padding: 0 2px !important;
+  font-size: 0.72rem !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   LOCATION EDIT DIALOG
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-loc-edit-app {
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.kctg-loc-header-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.kctg-loc-icon-btn {
+  width: 46px; height: 46px; padding: 0;
+  border-radius: 50%; overflow: hidden; flex-shrink: 0;
+}
+.kctg-loc-icon-btn img {
+  width: 100%; height: 100%; object-fit: contain; pointer-events: none;
+}
+.kctg-loc-colors { display: flex; flex-direction: column; gap: 5px; }
+.kctg-color-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.kctg-color-lbl {
+  font-size: 0.7rem; color: var(--kctg-text-dim);
+  width: 26px; flex-shrink: 0;
+}
+.kctg-color-swatch {
+  width: 26px; height: 26px;
+  border: 1px solid var(--kctg-border);
+  border-radius: 3px; padding: 0; cursor: pointer;
+  flex-shrink: 0; background: none;
+}
+.kctg-color-hex {
+  flex: 1; min-width: 0;
+  font-size: 0.72rem; font-family: monospace;
+  padding: 3px 5px !important;
+}
+.kctg-loc-scale { accent-color: var(--kctg-gold); cursor: pointer; }
+.kctg-loc-scale-val { font-size: 0.72rem; font-family: monospace; color: var(--kctg-gold-dim); min-width: 32px; text-align: right; flex-shrink: 0; }
+.kctg-loc-actions {
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RETAINER ART — explicit override of the slot-filled img rule
+   ══════════════════════════════════════════════════════════ */
+
+/* Per-pin scale driven by --kctg-pin-scale (set inline when scale ≠ 1) */
+.kctg-map-pin { transform: translate(-50%, -50%) scale(var(--kctg-pin-scale, 1)); }
+.kctg-traveler { transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; }
+
+/* In edit mode, pins show a move cursor and a subtle highlight on hover */
+.kctg-pin-edit:hover img { border-color: var(--kctg-gold); }
+
+/* Route path lines — always fully opaque */
+.kctg-route-line { opacity: 1; }
+
+/* Invisible wide hit-zone for click-to-add-waypoint — only active in waypointMode */
+.kctg-route-hitzone {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0;
+}
+.kctg-map-area.kctg-wp-mode .kctg-route-hitzone {
+  pointer-events: visibleStroke;
+  cursor: crosshair;
+}
+
+/* Waypoint drag handles — HTML divs, fixed pixel size so they stay circular */
+.kctg-wp-handle {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--kctg-bg-raised);
+  border: 1.5px solid var(--kctg-gold);
+  transform: translate(-50%, -50%);
+  cursor: move;
+  pointer-events: all;
+  z-index: 12;
+  transition: background 0.1s;
+}
+.kctg-wp-handle:hover { background: var(--kctg-gold); }
+
+/* ══════════════════════════════════════════════════════════
+   FOLDER SECTIONS
+   ══════════════════════════════════════════════════════════ */
+
+.kctg-folder-section {
+  margin: 6px 12px;
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  overflow: hidden;
+  flex-shrink: 0; /* prevents flex parent from collapsing folder rows */
+}
+.kctg-folder-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 10px;
+  background: var(--kctg-bg-raised);
+  border-bottom: 1px solid var(--kctg-border-dim);
+  font-size: 0.82rem;
+}
+.kctg-folder-grid {
+  padding: 8px;
+  border: none;
+  margin: 0;
+}
+.kctg-folder-list {
+  margin: 0;
+  padding: 0 6px;
+}
+.kctg-folder-empty {
+  font-size: 0.74rem;
+  color: var(--kctg-text-muted);
+  text-align: center;
+  padding: 8px 12px;
+  margin: 0;
+  font-style: italic;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RETAINER ART — FINAL OVERRIDE (must be last in file)
+   Both .kctg-ws-actor-slot img rules (specificty 0,2,1)
+   shrink the image to a 46/52px circle. Beat them with
+   a chained selector at higher specificity + !important.
+   ══════════════════════════════════════════════════════════ */
+.kctg-retainer-card.kctg-ws-actor-slot img.kctg-retainer-art,
+.kctg-retainer-card.kctg-slot-filled img.kctg-retainer-art,
+.kctg-retainer-card img.kctg-retainer-art {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: unset !important;
+  min-height: unset !important;
+  max-width: 100% !important;
+  border-radius: 0 !important;
+  border: none !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+  display: block !important;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.55) 45%, transparent 82%) !important;
+  mask-image:         linear-gradient(to bottom, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.55) 45%, transparent 82%) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAB CONSISTENCY (2026-06-14)
+   Every hub tab's top bar shared the same look so switching tabs feels seamless.
+   Previously each used different padding (6-8px), background (raised/panel/none)
+   and border. Appended last so it wins over the scattered per-tab definitions.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Unified top bar: same height, padding, surface and divider on every tab. */
+.kctg-workers-toolbar,
+.kctg-day-strip,
+.kctg-map-toolbar,
+.kctg-inv-header-bar,
+.kctg-tracker-toolbar {
+  min-height: 38px;
+  box-sizing: border-box;
+  padding: 7px 12px;
+  background: var(--kctg-bg-raised);
+  border-bottom: 1px solid var(--kctg-border-dim);
+}
+
+/* Tracker tab had no layout CSS at all — bring it in line with Workers/Inventory:
+   fixed toolbar on top, a single scrolling content area below. */
+.kctg-tracker-panel {
+  display: flex; flex-direction: column;
+  flex: 1; min-height: 0; overflow: hidden;
+}
+.kctg-tracker-list {
+  flex: 1; min-height: 0; overflow-y: auto;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+
+/* ── Folder drag-drop styles ── */
+.kctg-folder-grid-wrap {
+  min-height: 60px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.kctg-folder-grid-wrap.kctg-drag-over {
+  background: var(--kctg-gold-glow) !important;
+  outline: 2px dashed var(--kctg-gold-dim);
+  outline-offset: -2px;
+  border-radius: var(--kctg-radius);
+}
+.kctg-folder-empty-drop {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 56px; color: var(--kctg-text-muted); font-size: 0.76rem;
+  font-style: italic; border-radius: var(--kctg-radius);
+  border: 1px dashed var(--kctg-border-dim); margin: 6px 10px;
+}
+.kctg-roster-grid.kctg-ungrouped {
+  min-height: 80px;
+  transition: background 0.12s;
+}
+.kctg-roster-grid.kctg-ungrouped.kctg-drag-over {
+  background: var(--kctg-gold-glow);
+  outline: 2px dashed var(--kctg-gold-dim);
+  outline-offset: -2px;
+}
+/* Only reduce opacity while actively being dragged, not permanently */
+.kctg-dragging { opacity: 0.45; }
+
+/* ══════════════════════════════════════════════════════════
+   TRADE ORDER DEADLINES + QUEST LOCKS
+   ══════════════════════════════════════════════════════════ */
+
+/* Header status tags (share the .kctg-to-have pill geometry) */
+.kctg-to-due-tag, .kctg-to-overdue-tag, .kctg-to-expired-tag, .kctg-to-locked-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .64rem; font-weight: 700; white-space: nowrap;
+  padding: 1px 6px; border-radius: var(--kctg-radius-pill);
+  flex-shrink: 0;
+}
+.kctg-to-due-tag     { color: var(--kctg-gold-light); background: rgba(245,180,48,0.10); }
+.kctg-to-overdue-tag { color: var(--kctg-amber);      background: rgba(224,160,80,0.14); }
+.kctg-to-expired-tag { color: var(--kctg-danger);     background: rgba(201,60,88,0.12); }
+.kctg-to-locked-tag  {
+  color: var(--kctg-text-muted); background: rgba(255,255,255,0.06);
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Locked / expired cards read as inactive without hiding their content */
+.kctg-to-order-locked  { opacity: .55; }
+.kctg-to-order-expired { opacity: .75; }
+
+/* Footer note for locked / expired orders (mirrors the fulfilled tag placement) */
+.kctg-to-expired-note {
+  display: inline-flex; align-items: center; gap: 5px; margin-right: auto;
+  font-size: .7rem; font-weight: 600; font-style: italic;
+  color: var(--kctg-text-muted);
+}
+
+/* Deadline + quest-link admin row (order managers only) */
+.kctg-to-deadline-row {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  margin: 6px 0 2px; padding: 5px 8px;
+  background: var(--kctg-bg-raised);
+  border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  font-size: .7rem;
+}
+.kctg-to-deadline-lbl {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .66rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .03em; color: var(--kctg-text-muted); white-space: nowrap;
+}
+.kctg-to-deadline-hint { font-size: .66rem; color: var(--kctg-text-muted); white-space: nowrap; }
+.kctg-to-quest-slot {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-width: 0; flex: 1 1 120px; padding: 2px 7px;
+}
+.kctg-to-quest-name {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: .7rem; color: var(--kctg-text);
+}

@@ -1,0 +1,531 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   KCTG Atelier — Unified Visual System
+   Ground: #0b0a13  Surface: #1c1a27  Accent: amber → russet  Text: parchment
+   Inspired by the Daggerheart Compact Sheets visual language.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Custom font (kept for optional use in labels) ───── */
+@font-face {
+  font-family: 'YellowMagician';
+  src: url('../font/YellowMagician.ttf') format('truetype');
+  font-weight: normal; font-style: normal; font-display: swap;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-module {
+  /* Accent gradient — amber primary → russet secondary */
+  --kctg-amber:         #f5b430;
+  --kctg-russet:        #d06838;
+  --kctg-amber-soft:    rgba(245,180,48,0.12);
+  --kctg-amber-line:    rgba(245,180,48,0.24);
+  --kctg-ribbon:        linear-gradient(135deg, #f5b430 0%, #d06838 100%);
+
+  /* Alias — old names kept so JS / module CSS still compiles */
+  --kctg-gold:          #f5b430;
+  --kctg-gold-light:    #f8cc60;
+  --kctg-gold-dim:      #d06838;
+  --kctg-gold-glow:     rgba(245,180,48,0.10);
+
+  /* Ground */
+  --kctg-bg:            #0b0a13;
+  --kctg-bg-raised:     #09080e;   /* near-black cards — hierarchy comes from borders/accents */
+  --kctg-bg-raised-rgb: 9,8,14;
+  --kctg-bg-panel:      rgba(6,5,12,0.97);
+  --kctg-bg-input:      rgba(15,13,22,0.92);  /* inputs slightly lighter so fields are visible */
+
+  /* Glass entries — near-black surface, hierarchy from borders/accents */
+  --kctg-entry-glass:       rgba(9,8,14,0.92);
+  --kctg-entry-glass-hover: rgba(20,18,28,0.98);
+
+  /* Borders / lines */
+  --kctg-border:        rgba(245,180,48,0.26);
+  --kctg-border-dim:    rgba(231,209,177,0.11);
+  --kctg-line:          rgba(231,209,177,0.14);  /* dashed divider */
+
+  /* Text — warm parchment */
+  --kctg-text:          #efe6d8;
+  --kctg-text-dim:      #c9b897;
+  --kctg-text-muted:    #a1927d;  /* lightened for WCAG AA on the near-black ground (was #7a6e60, ~3.4:1) */
+
+  /* Status */
+  --kctg-danger:        #c93c58;
+  --kctg-success:       #5aad5a;
+
+  /* Geometry */
+  --kctg-radius:        6px;
+  --kctg-radius-pill:   999px;
+  --kctg-radius-card:   8px;
+
+  /* Typography */
+  --kctg-font:          "Noto Sans", Signika, "Trebuchet MS", sans-serif;
+  --kctg-font-display:  "YellowMagician", var(--kctg-font);
+
+  /* Transitions */
+  --kctg-ease:          0.14s ease;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   WINDOW CHROME
+   Minimal, near-invisible header (DH approach — let content speak)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* Subtle fade-in — opacity ONLY, no transform.
+   transform:scale persists via fill:both creating a compositing layer that
+   breaks Foundry's CSS resize grip. Opacity-only avoids this entirely.     */
+@keyframes kctg-window-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.kctg-module {
+  background:   var(--kctg-bg) !important;
+  border:       1px solid rgba(245,180,48,0.20) !important;
+  box-shadow:   0 12px 48px rgba(0,0,0,0.90), 0 0 0 1px rgba(245,180,48,0.05) !important;
+  color:        var(--kctg-text);
+  font-family:  var(--kctg-font);
+  color-scheme: dark;
+  animation:    kctg-window-in 0.18s ease;
+}
+
+/* Header: thinned, no left padding so the ribbon title bleeds to the left edge */
+.kctg-module .window-header {
+  background:    rgba(6,5,15,0.96) !important;
+  border-bottom: 1px solid var(--kctg-border-dim) !important;
+  padding:       0 6px 0 0 !important;   /* zero all sides; small right gap for controls */
+  min-height:    22px !important;
+}
+
+/* ── DH-style ribbon title badge ────────────────────────────────────────────
+   Left edge square, right edge diagonal angular cut (like a label tag).
+   margin-right: auto pushes the close/minimise controls to the far right.   */
+.kctg-module .window-title {
+  background:     var(--kctg-ribbon) !important;
+  color:          #0b0a13 !important;
+  font-family:    var(--kctg-font) !important;
+  font-weight:    700 !important;
+  font-size:      0.65rem !important;
+  letter-spacing: 0.10em !important;
+  text-transform: uppercase !important;
+  /* Angular diagonal cut — 36px offset on a ~22px thin header ≈ 58° steep cut */
+  border-radius:  0 !important;
+  clip-path:      polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%) !important;
+  /* Right padding compensates for steep diagonal — text clears the cut */
+  padding:        0 44px 0 10px !important;
+  /* Push ALL sibling controls (close, minimise) to the far right */
+  margin-right:   auto !important;
+  margin-left:    0 !important;
+  /* Only as wide as text — no growing */
+  flex:           0 0 auto !important;
+  width:          auto !important;
+  /* Fill header height */
+  align-self:     stretch !important;
+  display:        inline-flex !important;
+  align-items:    center !important;
+  white-space:    nowrap !important;
+  line-height:    1 !important;
+  overflow:       visible !important;
+}
+
+.kctg-module .window-content {
+  background: var(--kctg-bg) !important;
+  padding:    0 !important;
+  overflow:   hidden;
+  /* Do NOT add display:flex here — Foundry's own CSS handles window-content height.
+     Children use height:100% which references the height Foundry assigns.     */
+}
+/* Scroll behaviour */
+.kctg-module * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--kctg-russet) transparent;
+}
+.kctg-module ::-webkit-scrollbar       { width: 4px; height: 4px; }
+.kctg-module ::-webkit-scrollbar-track { background: transparent; }
+.kctg-module ::-webkit-scrollbar-thumb {
+  background: var(--kctg-russet); border-radius: var(--kctg-radius-pill);
+}
+.kctg-module ::-webkit-scrollbar-thumb:hover { background: var(--kctg-amber); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   BASE CONTAINERS
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-app {
+  display: flex; flex-direction: column; gap: 10px; padding: 14px;
+  height: 100%; box-sizing: border-box; overflow-y: auto; color: var(--kctg-text);
+  font-family: var(--kctg-font);
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-label {
+  font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--kctg-text-muted); font-family: var(--kctg-font);
+}
+.kctg-hint        { font-size: 0.78rem; color: var(--kctg-text-dim); margin: 0; line-height: 1.55; }
+.kctg-subtle      { font-size: 0.80rem; color: var(--kctg-text-dim); margin: 4px 0; line-height: 1.5; }
+.kctg-dim         { opacity: 0.32; }
+.kctg-text-gold   { color: var(--kctg-amber); }
+.kctg-truncate    { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kctg-strikethrough { text-decoration: line-through; opacity: 0.42; }
+.kctg-italic      { font-style: italic; }
+.kctg-failed-text { opacity: 0.38; text-decoration: line-through; }
+
+/* Section wrapper */
+.kctg-section { display: flex; flex-direction: column; gap: 6px; }
+
+/* .kctg-gradient-text — amber→russet gradient text.
+   ONLY use on leaf text elements with no child buttons/inputs.
+   background-clip:text is inherited — applying to containers kills button labels. */
+.kctg-gradient-text {
+  background:              var(--kctg-ribbon);
+  -webkit-background-clip: text;
+  background-clip:         text;
+  -webkit-text-fill-color: transparent;
+  color:                   transparent;
+}
+
+/* Any button inside a gradient-text container must reset text-fill so it stays visible */
+.kctg-module button,
+.kctg-module input,
+.kctg-module .kctg-btn {
+  -webkit-text-fill-color: currentColor;
+}
+
+/* ── Panel header — dashed flanking lines, DH style ─────
+   These headings float between two dashed hairlines.       */
+.kctg-panel-header {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.62rem; font-weight: 400;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--kctg-text-muted);
+  margin-bottom: 8px;
+  font-family: var(--kctg-font);
+}
+.kctg-panel-header::before,
+.kctg-panel-header::after {
+  content: ""; flex: 1 1 auto;
+  border-top: 1px dashed var(--kctg-line);
+}
+.kctg-panel-hint {
+  font-size: 0.62rem; font-weight: 400; font-style: italic;
+  text-transform: none; letter-spacing: 0;
+  color: var(--kctg-text-muted); margin-left: 2px; opacity: 0.75;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   BUTTONS
+   DH uses pill-shapes for icon buttons, restrained fills for primaries.
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: var(--kctg-radius); border: 1px solid transparent;
+  cursor: pointer; font-size: 0.80rem; font-weight: 600;
+  font-family: var(--kctg-font); line-height: 1; white-space: nowrap;
+  transition: background var(--kctg-ease), border-color var(--kctg-ease),
+              color var(--kctg-ease), box-shadow var(--kctg-ease);
+}
+/* Primary — amber→russet gradient ribbon */
+.kctg-btn-gold {
+  background:   var(--kctg-ribbon);
+  border-color: rgba(208,104,56,0.4);
+  color:        #0b0a13;
+  /* font-weight intentionally NOT overridden — inherits base 600 to match all buttons */
+}
+.kctg-btn-gold:hover:not(:disabled) {
+  background:   linear-gradient(135deg, #f8c040 0%, #db7848 100%);
+  border-color: rgba(248,192,64,0.5);
+  box-shadow:   0 0 16px rgba(245,180,48,0.28);
+}
+.kctg-btn-gold:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Danger */
+.kctg-btn-danger {
+  background: rgba(201,60,88,0.10); border-color: rgba(201,60,88,0.30); color: var(--kctg-danger);
+}
+.kctg-btn-danger:hover { background: rgba(201,60,88,0.20); border-color: var(--kctg-danger); }
+
+/* Outline (ghost) */
+.kctg-btn-outline {
+  background: transparent; border-color: var(--kctg-border-dim); color: var(--kctg-text-dim);
+}
+.kctg-btn-outline:hover { border-color: var(--kctg-amber); color: var(--kctg-amber); background: var(--kctg-amber-soft); }
+
+/* Sizes — pill for xs (icon-level), slightly rounded for sm */
+.kctg-btn-sm   { padding: 5px 11px; font-size: 0.76rem; border-radius: var(--kctg-radius); }
+.kctg-btn-xs   { padding: 2px 7px;  font-size: 0.70rem; border-radius: var(--kctg-radius-pill); }
+.kctg-btn-wide { width: 100%; justify-content: center; }
+
+/* ── Strip bounding box from icon-only × (delete) buttons ──────────────────
+   Any kctg-btn that contains ONLY a fa-times icon becomes a bare icon button,
+   matching the progress-tracker remove style. Uses CSS :has() (Chrome 105+,
+   Firefox 121+, Safari 15.4+ — all modern Electron/browser targets).         */
+.kctg-module .kctg-btn:has(> i.fa-times):has(> :only-child),
+.kctg-module .kctg-btn:has(> .fa-times):has(> :only-child) {
+  background:   transparent !important;
+  border-color: transparent !important;
+  color:        var(--kctg-danger) !important;
+  opacity:      0.50;
+  padding:      2px 5px !important;
+  box-shadow:   none !important;
+}
+.kctg-module .kctg-btn:has(> i.fa-times):has(> :only-child):hover {
+  opacity:    1 !important;
+  background: rgba(201,60,88,0.12) !important;
+}
+
+/* Icon-only action button */
+.kctg-btn-icon {
+  background: transparent; border: none; cursor: pointer;
+  color: var(--kctg-text-dim); font-size: 0.88rem; flex-shrink: 0;
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border-radius: var(--kctg-radius-pill);
+  opacity: 0.65;
+  transition: opacity var(--kctg-ease), color var(--kctg-ease), transform var(--kctg-ease);
+}
+.kctg-btn-icon:hover { opacity: 1; color: var(--kctg-amber); transform: scale(1.12); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   FORM CONTROLS
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-input {
+  background: var(--kctg-bg-input); border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius); color: var(--kctg-text);
+  font-family: var(--kctg-font); font-size: 0.88rem; padding: 6px 10px;
+  width: 100%; box-sizing: border-box;
+  transition: border-color var(--kctg-ease), background var(--kctg-ease);
+}
+.kctg-input::placeholder { color: var(--kctg-text-muted); opacity: 0.65; }
+.kctg-input:focus { border-color: var(--kctg-amber); outline: none; background: rgba(28,26,39,0.95); }
+.kctg-input-title { font-size: 1.05rem; font-weight: 700; padding: 7px 10px; letter-spacing: 0.01em; }
+.kctg-input-qty {
+  width: 52px; text-align: center; box-sizing: border-box;
+  background: var(--kctg-bg-input); border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius); color: var(--kctg-text);
+  font-family: var(--kctg-font); font-size: 0.82rem; padding: 4px 6px;
+  transition: border-color var(--kctg-ease);
+}
+.kctg-input-qty:focus { border-color: var(--kctg-amber); outline: none; }
+.kctg-input-sub  { flex: 1; font-size: 0.85rem; padding: 5px 8px; }
+.kctg-textarea   { resize: vertical; line-height: 1.6; min-height: 48px; }
+.kctg-textarea-lg { min-height: 80px; }
+
+/* Select — custom amber arrow */
+.kctg-select {
+  width: 100%; padding: 6px 28px 6px 10px; line-height: 1.3;
+  border-radius: var(--kctg-radius); border: 1px solid var(--kctg-border-dim);
+  background: var(--kctg-bg-input)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M5 7L0 0h10z' fill='%23f5b430'/%3E%3C/svg%3E")
+    no-repeat right 9px center;
+  color: var(--kctg-text); font-size: 0.88rem; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  font-family: var(--kctg-font);
+  transition: border-color var(--kctg-ease);
+}
+.kctg-select:focus { border-color: var(--kctg-amber); outline: none; }
+.kctg-select option { background: var(--kctg-bg-raised); color: var(--kctg-text); }
+.kctg-select-sm { padding: 3px 22px 3px 8px; font-size: 0.76rem; width: auto; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   TAB BAR
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-tab-bar {
+  display: flex; gap: 0; padding: 6px 10px 0;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  background: rgba(6,5,15,0.92); flex-shrink: 0;
+  /* The 760px default width fits all 7 tabs. If the window is dragged narrower, tabs
+     that don't fit are clipped (hidden) — never a scrollbar. */
+  overflow: hidden;
+}
+.kctg-tab-btn {
+  position: relative; bottom: -1px;
+  background: transparent; border: 1px solid transparent; border-bottom: none;
+  border-radius: var(--kctg-radius) var(--kctg-radius) 0 0;
+  color: var(--kctg-text-muted); cursor: pointer;
+  font-family: var(--kctg-font); font-size: 0.72rem; font-weight: 700;
+  padding: 5px 14px; letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background var(--kctg-ease), color var(--kctg-ease), border-color var(--kctg-ease);
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.kctg-tab-btn:hover { background: var(--kctg-amber-soft); color: var(--kctg-text-dim); }
+.kctg-tab-btn.kctg-tab-active {
+  background: var(--kctg-bg);
+  border-color: var(--kctg-border-dim); border-bottom-color: var(--kctg-bg);
+  color: var(--kctg-amber);
+  -webkit-text-fill-color: currentColor;  /* cancel any inherited gradient-text */
+}
+.kctg-tab-btn i { font-size: 0.70rem; }
+.kctg-tab-badge {
+  background: var(--kctg-ribbon); border: none;
+  border-radius: var(--kctg-radius-pill); color: #0b0a13;
+  -webkit-text-fill-color: #0b0a13;
+  font-size: 0.60rem; font-weight: 800; padding: 0 5px; min-width: 15px; text-align: center;
+}
+.kctg-tab-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   LAYOUT HELPERS
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-resize-handle {
+  width: 3px; flex-shrink: 0; cursor: col-resize;
+  background: var(--kctg-border-dim); transition: background var(--kctg-ease);
+}
+.kctg-resize-handle:hover, .kctg-resize-handle:active { background: var(--kctg-amber); }
+.kctg-action-row { display: flex; gap: 8px; align-items: center; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ITEM / INGREDIENT ROWS
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-results-section { display: flex; flex-direction: column; gap: 6px; }
+.kctg-results-header  { display: flex; align-items: center; justify-content: space-between; }
+.kctg-results-list, .kctg-ingredient-list, .kctg-reward-list, .kctg-subquest-list {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px; overflow-y: auto;
+}
+/* These lists scroll, but without a floor flex pressure in a short window can
+   crush them to a few px (rows exist but are invisible). Guarantee one full
+   row is visible, two when the list has two or more; the rest scrolls. */
+.kctg-results-list:has(li), .kctg-ingredient-list:has(li),
+.kctg-reward-list:has(li), .kctg-subquest-list:has(li) { min-height: 38px; }
+.kctg-results-list:has(li:nth-child(2)), .kctg-ingredient-list:has(li:nth-child(2)),
+.kctg-reward-list:has(li:nth-child(2)), .kctg-subquest-list:has(li:nth-child(2)) { min-height: 76px; }
+.kctg-result-row, .kctg-ingredient-row, .kctg-reward-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--kctg-bg-raised); border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius); padding: 5px 9px; font-size: 0.82rem;
+  transition: border-color var(--kctg-ease);
+}
+.kctg-result-row:hover, .kctg-ingredient-row:hover { border-color: var(--kctg-amber-line); }
+.kctg-item-img  { width: 26px; height: 26px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+.kctg-item-name { flex: 1; font-size: 0.84rem; }
+.kctg-item-qty  { color: var(--kctg-amber); font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+.kctg-missing   { border-color: rgba(201,60,88,0.35) !important; background: rgba(201,60,88,0.06) !important; }
+.kctg-missing-badge { color: var(--kctg-danger); font-weight: 700; }
+.kctg-have-badge    { color: var(--kctg-success); font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   DROP ZONE
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-drop-zone {
+  border: 1px dashed var(--kctg-border-dim); border-radius: var(--kctg-radius);
+  padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: 0.76rem; color: var(--kctg-text-muted);
+  cursor: default; transition: background var(--kctg-ease), border-color var(--kctg-ease), color var(--kctg-ease);
+}
+.kctg-drop-zone:hover, .kctg-drag-over {
+  background: var(--kctg-amber-soft); border-color: var(--kctg-amber) !important;
+  color: var(--kctg-text-dim);
+}
+.kctg-drop-zone--sm { padding: 5px 10px !important; font-size: 0.72rem !important; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ICON PREVIEW
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-icon-preview {
+  flex-shrink: 0; width: 44px; height: 44px;
+  background: var(--kctg-bg-panel); border: 1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius-card); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2px; overflow: hidden; transition: border-color var(--kctg-ease), background var(--kctg-ease);
+}
+.kctg-icon-preview:hover { border-color: var(--kctg-amber); background: var(--kctg-amber-soft); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   EMPTY STATES
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex: 1; gap: 10px; padding: 32px 20px; text-align: center; color: var(--kctg-text-muted);
+  font-size: 0.84rem;
+}
+.kctg-empty-sm   { padding: 14px 18px; font-size: 0.80rem; }
+.kctg-empty-icon { font-size: 2rem; color: var(--kctg-border-dim); margin-bottom: 4px; opacity: 0.5; }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SILHOUETTE PLACEHOLDER (mystery-man)
+   Used for empty actor / giver / retainer slots
+   ════════════════════════════════════════════════════════════════════════════ */
+/* Silhouette placeholder — Font Awesome fa-user, amber-tinted ghost */
+.kctg-silhouette {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width:  100%;
+  height: 100%;
+  opacity: 0.40;
+  color: var(--kctg-amber);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.kctg-silhouette i {
+  font-size: 1.5rem;
+  line-height: 1;
+  /* Ensure FA icon isn't killed by any inherited text-fill */
+  -webkit-text-fill-color: currentColor !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   CONFIG HEADER + WARNING
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-config-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  padding: 12px 14px 8px; border-bottom: 1px dashed var(--kctg-line); flex-shrink: 0;
+}
+.kctg-config-header .kctg-hint { max-width: 320px; }
+.kctg-warning {
+  font-size: 0.78rem; color: var(--kctg-amber);
+  background: rgba(245,180,48,0.07); border: 1px solid rgba(245,180,48,0.20);
+  border-left: 3px solid var(--kctg-amber);
+  border-radius: var(--kctg-radius); padding: 7px 10px; margin: 0; line-height: 1.5;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   SHARED TOAST  (kctgToast() — main.mjs)
+   Top-center pop, matching the Quests toast. Lives on <body>, outside any
+   .kctg-module, so it hoists its own design tokens.
+   ════════════════════════════════════════════════════════════════════════════ */
+#kctg-toast-container {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 99999;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  pointer-events: none;
+  min-width: 240px; max-width: 380px;
+  --kctg-bg-raised:   #09080e;
+  --kctg-amber:       #f5b430;
+  --kctg-amber-line:  rgba(245,180,48,0.24);
+  --kctg-gold-light:  #f8cc60;
+  --kctg-text:        #efe6d8;
+  --kctg-danger:      #c93c58;
+  --kctg-radius-card: 8px;
+  --kctg-font:        "Noto Sans", Signika, "Trebuchet MS", sans-serif;
+}
+.kctg-toast {
+  background: var(--kctg-bg-raised); color: var(--kctg-gold-light);
+  border: 1px solid var(--kctg-amber-line);
+  box-shadow: 0 0 18px rgba(245,180,48,0.30), 0 6px 24px rgba(0,0,0,0.80);
+  padding: 10px 16px; border-radius: var(--kctg-radius-card);
+  font-family: var(--kctg-font); font-size: 0.90rem;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; pointer-events: all;
+  min-width: 200px; max-width: 340px; opacity: 0;
+  border-left: 3px solid var(--kctg-amber);
+}
+.kctg-toast i { color: var(--kctg-amber); font-size: 1.05rem; flex-shrink: 0; filter: drop-shadow(0 0 5px rgba(245,180,48,0.6)); }
+.kctg-toast .kctg-toast-name { font-weight: 800; color: var(--kctg-text); text-transform: uppercase; letter-spacing: 0.03em; }
+/* Danger tone: red accent for failures */
+.kctg-toast--danger {
+  color: #f3b6c0; border-color: rgba(201,60,88,0.45);
+  border-left-color: var(--kctg-danger);
+  box-shadow: 0 0 18px rgba(201,60,88,0.28), 0 6px 24px rgba(0,0,0,0.80);
+}
+.kctg-toast--danger i { color: var(--kctg-danger); filter: drop-shadow(0 0 5px rgba(201,60,88,0.6)); }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   HUD / SCENE CONTROLS
+   ════════════════════════════════════════════════════════════════════════════ */
+.kctg-hud-icon { color: var(--kctg-amber) !important; border-color: var(--kctg-amber-line) !important; }
+.kctg-hud-icon:hover { background: var(--kctg-amber-soft) !important; border-color: var(--kctg-amber) !important; }
+.kctg-scene-btn { cursor: pointer; }
+.kctg-scene-btn i { pointer-events: none; }

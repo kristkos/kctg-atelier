@@ -1,0 +1,29 @@
+<div class="kctg-app kctg-event-config-inner">
+
+  <div class="kctg-config-header">
+    <p class="kctg-hint"><i class="fas fa-info-circle"></i>
+      Drag a RollTable onto each slot. When a task triggers <em>Roll Event</em>, it uses that table —
+      or falls back to <em>General Events</em>.</p>
+  </div>
+
+  <ul class="kctg-evtable-list">
+    {{#each rows}}
+    <li class="kctg-evtable-row">
+      <i class="{{icon}}" style="width:16px;text-align:center;color:var(--kctg-gold-dim);flex-shrink:0;"></i>
+      <span class="kctg-evtable-label">{{label}}</span>
+      <div class="kctg-evtable-slot kctg-drop-zone" data-key="{{key}}">
+        {{#if uuid}}
+          <i class="fas fa-dice-d20"></i>
+          <span class="kctg-table-name" style="flex:1;">{{uuid}}</span>
+          <button class="kctg-evtable-clear kctg-btn kctg-btn-xs kctg-btn-danger"
+                  data-key="{{key}}" type="button">×</button>
+        {{else}}
+          <i class="fas fa-dice-d20 kctg-dim"></i>
+          <span class="kctg-table-placeholder">Drop RollTable here</span>
+        {{/if}}
+      </div>
+    </li>
+    {{/each}}
+  </ul>
+
+</div>

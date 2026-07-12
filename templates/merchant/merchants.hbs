@@ -1,0 +1,693 @@
+<div class="kctg-app kctg-merchants-inner">
+
+  {{!-- ════ LEFT PANEL: merchant list — GM only ════ --}}
+  {{#if isGM}}
+  <div class="kctg-merchant-list-panel">
+    <div class="kctg-merch-list-header">
+      <span class="kctg-label"><i class="fas fa-store"></i> Merchants</span>
+    </div>
+    <ul class="kctg-merchant-list">
+      {{#each merchants}}
+      <li class="kctg-merchant-list-row {{#if isSelected}}kctg-selected{{/if}}" data-id="{{id}}">
+        <div class="kctg-merch-list-thumb" style="background-image:url('{{img}}')"></div>
+        <span class="kctg-merch-list-name">{{name}}</span>
+        {{#if openForBusiness}}<span class="kctg-merch-open-dot" title="Open for business"></span>{{/if}}
+      </li>
+      {{else}}
+      <li class="kctg-empty-sm"><p class="kctg-subtle">No merchants yet.</p></li>
+      {{/each}}
+    </ul>
+    {{#if isGM}}
+    <div class="kctg-merch-actor-drop kctg-drop-zone">
+      <i class="fas fa-user-plus"></i> Drop Actor here
+    </div>
+    {{/if}}
+  </div>
+
+  <div class="kctg-resize-handle" title="Drag to resize"></div>
+  {{/if}}{{!-- end GM left panel --}}
+
+  {{!-- ════ RIGHT PANEL: merchant detail ════ --}}
+  <div class="kctg-merchant-detail">
+    {{#if selected}}
+
+      {{!-- Art layer — portrait bleeds from top-right, same as quest givers --}}
+      <div class="kctg-merch-art-layer" style="background-image:url('{{selected.img}}')"></div>
+
+      {{!-- Header --}}
+      <div class="kctg-merch-header">
+        <div class="kctg-merch-header-body">
+          <div class="kctg-merch-hero-name">{{selected.name}}</div>
+          <div class="kctg-merch-hero-meta">
+            <span class="kctg-subtle kctg-dim" style="text-transform:capitalize;">{{selected.type}}</span>
+            {{#if selected.enabled}}
+              {{#if selected.openForBusiness}}
+                <span class="kctg-merch-badge kctg-merch-badge--open">Open</span>
+              {{else}}
+                <span class="kctg-merch-badge kctg-merch-badge--closed">Closed</span>
+              {{/if}}
+            {{/if}}
+          </div>
+        </div>
+        {{#if isGM}}
+        <div class="kctg-merch-header-actions">
+          {{#if selected.enabled}}
+            <button class="kctg-merch-disable-btn kctg-btn kctg-btn-danger kctg-btn-xs" type="button"
+                    title="Disable merchant"><i class="fas fa-times"></i></button>
+          {{else}}
+            <button class="kctg-merch-enable-btn kctg-btn kctg-btn-gold" type="button">
+              <i class="fas fa-store"></i> Enable as Merchant
+            </button>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if selected.enabled}}
+
+        {{!-- Tab bar: GM tabs or nothing for players / GM-as-shopper (they see shop inline) --}}
+        {{#if gmManage}}
+        <div class="kctg-tab-bar">
+          <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabTables}}kctg-tab-active{{/if}}"
+                  data-tab="tables" type="button">
+            <i class="fas fa-dice-d20"></i> Stock Tables
+            {{#if selected.stockTables.length}}<span class="kctg-tab-badge">{{selected.stockTables.length}}</span>{{/if}}
+          </button>
+          <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabInventory}}kctg-tab-active{{/if}}"
+                  data-tab="inventory" type="button">
+            <i class="fas fa-box-open"></i> Inventory
+            {{#if inventory.length}}<span class="kctg-tab-badge">{{inventory.length}}</span>{{/if}}
+          </button>
+          <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabOrders}}kctg-tab-active{{/if}}"
+                  data-tab="orders" type="button">
+            <i class="fas fa-clipboard-list"></i> Orders
+            {{#if pendingOrders.length}}<span class="kctg-tab-badge">{{pendingOrders.length}}</span>{{/if}}
+          </button>
+          <button class="kctg-tab-btn kctg-merchant-tab-btn {{#if isTabSettings}}kctg-tab-active{{/if}}"
+                  data-tab="settings" type="button">
+            <i class="fas fa-cog"></i> Settings
+          </button>
+        </div>
+        {{/if}}
+
+        <div class="kctg-merch-tab-content">
+
+          {{#if gmManage}}
+          {{!-- ════════════ GM VIEW ════════════ --}}
+
+            {{!-- STOCK TABLES TAB --}}
+            {{#if isTabTables}}
+            <div class="kctg-merch-tables-tab">
+              <div class="kctg-merch-toolbar">
+                <span class="kctg-hint kctg-dim"><i class="fas fa-info-circle"></i> Drag Roll Tables from the sidebar</span>
+                <button class="kctg-merch-preview-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="Roll the tables and review before adding">
+                  <i class="fas fa-dice"></i> Roll Preview
+                </button>
+                <button class="kctg-merch-restock-btn kctg-btn kctg-btn-gold kctg-btn-sm" type="button" title="Roll and add everything immediately">
+                  <i class="fas fa-sync-alt"></i> Restock Now
+                </button>
+              </div>
+
+              {{#if selected.stockTables.length}}
+              <ul class="kctg-merch-table-list">
+                {{#each selected.stockTables}}
+                <li class="kctg-merch-table-card {{#unless enabled}}kctg-merch-table-card--disabled{{/unless}}">
+                  <div class="kctg-merch-table-top">
+                    <label class="kctg-merch-active-toggle" title="Enable this table">
+                      <input class="kctg-tbl-active" type="checkbox" {{#if enabled}}checked{{/if}} data-id="{{id}}" />
+                    </label>
+                    <img src="{{tableImg}}" class="kctg-merch-table-icon" onerror="this.src='icons/svg/d20-black.svg'" alt="" />
+                    <span class="kctg-merch-table-name">{{tableName}}</span>
+                    <button class="kctg-tbl-remove kctg-btn kctg-btn-danger kctg-btn-xs" data-id="{{id}}" type="button">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="kctg-merch-table-cfg">
+                    <label class="kctg-merch-cfg-lbl" title="Number of draws from this table — fixed number or dice formula like 1d6+2">
+                      <i class="fas fa-dice"></i> Rolls
+                    </label>
+                    <input class="kctg-tbl-formula kctg-input kctg-input-sub" type="text"
+                           value="{{rollFormula}}" data-id="{{id}}" placeholder="1d4+1" style="max-width:64px;" />
+                    <label class="kctg-merch-cfg-lbl" title="Quantity added per drawn item — a flat number (e.g. 20 arrows) or dice (e.g. 2d4+3)">
+                      <i class="fas fa-cubes-stacked"></i> Qty
+                    </label>
+                    <input class="kctg-tbl-qty kctg-input kctg-input-sub" type="text"
+                           value="{{#if qtyFormula}}{{qtyFormula}}{{else}}1{{/if}}" data-id="{{id}}" placeholder="1" style="max-width:64px;" />
+                    <label class="kctg-merch-cfg-check" title="No duplicate items from this table per restock">
+                      <input class="kctg-tbl-unique" type="checkbox" {{#if unique}}checked{{/if}} data-id="{{id}}" />
+                      <span>No duplicates</span>
+                    </label>
+                    <label class="kctg-merch-cfg-check" title="Remove all existing inventory before rolling this table">
+                      <input class="kctg-tbl-reset" type="checkbox" {{#if resetBeforeAdd}}checked{{/if}} data-id="{{id}}" />
+                      <span>Clear first</span>
+                    </label>
+                  </div>
+                  {{#if ../canConvertSpells}}
+                  <div class="kctg-merch-table-cfg">
+                    <label class="kctg-merch-cfg-lbl" title="Rolled spells become this item type (cantrips always use the system's cantrip format)">
+                      <i class="fas fa-scroll"></i> Spells
+                    </label>
+                    <select class="kctg-tbl-spellformat kctg-input kctg-input-sub" data-id="{{id}}" style="min-width:96px;max-width:130px;">
+                      {{#each formatOptions}}<option value="{{key}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+                    </select>
+                    {{#if isMixed}}
+                    <label class="kctg-merch-cfg-lbl" title="Chance a rolled spell becomes a wand instead of a scroll">
+                      <i class="fas fa-wand-magic-sparkles"></i> Wands %
+                    </label>
+                    <input class="kctg-tbl-wandshare kctg-input kctg-input-sub" type="number" min="0" max="100"
+                           value="{{wandShare}}" data-id="{{id}}" style="max-width:56px;" />
+                    {{/if}}
+                    <label class="kctg-merch-cfg-lbl" title="Rank for rolled spells: empty = spell's base rank, or a number/dice formula (e.g. 3 or 1d4+2), clamped to each spell's valid range">
+                      <i class="fas fa-arrow-up-1-9"></i> Rank
+                    </label>
+                    <input class="kctg-tbl-rank kctg-input kctg-input-sub" type="text"
+                           value="{{spellRankFormula}}" data-id="{{id}}" placeholder="base" style="max-width:64px;" />
+                  </div>
+                  {{/if}}
+                </li>
+                {{/each}}
+              </ul>
+              {{/if}}
+
+              <div class="kctg-merch-table-drop kctg-drop-zone">
+                <i class="fas fa-dice-d20"></i> Drop a Roll Table here to add it
+              </div>
+
+              {{!-- Current stock: grouped by category, same drag mechanic as Inventory tab --}}
+              <div class="kctg-panel-header" style="margin:8px 14px 0;"><i class="fas fa-box-open"></i> Current Stock</div>
+              {{#if inventory.length}}
+              {{#each inventoryByCategory}}
+              {{#if items.length}}
+              <div class="kctg-merch-cat-section" data-cat-id="{{#if id}}{{id}}{{/if}}">
+                <div class="kctg-merch-stock-cat-header">
+                  <span class="kctg-label kctg-dim" style="font-size:.63rem;text-transform:uppercase;letter-spacing:.08em;">{{name}}</span>
+                  <span class="kctg-hint kctg-dim" style="font-size:.63rem;margin-left:auto;">{{items.length}}</span>
+                </div>
+                <ul class="kctg-merch-stock-preview">
+                  {{#each items}}
+                  <li class="kctg-merch-stock-row {{#if hidden}}kctg-merch-item-hidden{{/if}}"
+                      data-item-id="{{id}}" draggable="true">
+                    <i class="fas fa-grip-vertical kctg-merch-drag-handle"></i>
+                    <img src="{{img}}" class="kctg-item-img" onerror="this.src='icons/svg/item-bag.svg'" alt="{{name}}" />
+                    <span class="kctg-item-name">{{name}}</span>
+                    {{#if priceLabel}}<span class="kctg-merch-price">{{priceLabel}}</span>{{/if}}
+                    <span class="kctg-item-qty">×{{qty}}</span>
+                    <button class="kctg-item-info kctg-btn-icon" data-item-id="{{id}}" type="button" title="Show description"><i class="fas fa-circle-info"></i></button>
+                    <button class="kctg-merch-item-hide kctg-btn-icon {{#if hidden}}kctg-is-hidden{{/if}}"
+                            data-id="{{id}}" type="button"
+                            title="{{#if hidden}}Visible to players again{{else}}Hide from players{{/if}}">
+                      <i class="fas {{#if hidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
+                    </button>
+                  </li>
+                  {{/each}}
+                </ul>
+              </div>
+              {{/if}}
+              {{/each}}
+              {{else}}
+              <p class="kctg-subtle" style="padding:8px 14px 4px;font-size:.76rem;">No items yet. Click <strong>Restock Now</strong> or drag items to the actor.</p>
+              {{/if}}
+            </div>
+            {{/if}}
+
+            {{!-- INVENTORY TAB --}}
+            {{#if isTabInventory}}
+            <div class="kctg-merch-inventory-tab">
+              <div class="kctg-merch-toolbar">
+                <span class="kctg-hint kctg-dim"><i class="fas fa-info-circle"></i> Organise items into categories</span>
+                <div style="display:flex;gap:6px;">
+                  <button class="kctg-merch-cat-add kctg-btn kctg-btn-outline kctg-btn-sm" type="button">
+                    <i class="fas fa-folder-plus"></i> Add Category
+                  </button>
+                  <button class="kctg-merch-clear-inv kctg-btn kctg-btn-danger kctg-btn-sm" type="button">
+                    <i class="fas fa-trash"></i> Clear All
+                  </button>
+                </div>
+              </div>
+
+              {{!-- data-cat-id="" for uncategorized (General) drop zone --}}
+              {{#each inventoryByCategory}}
+              <div class="kctg-merch-cat-section" data-cat-id="{{#if id}}{{id}}{{/if}}">
+                <div class="kctg-merch-cat-header">
+                  {{#if id}}
+                    <input class="kctg-merch-cat-name kctg-input kctg-input-sub" type="text"
+                           value="{{name}}" data-id="{{id}}" placeholder="Category name" />
+                    <button class="kctg-merch-cat-remove kctg-btn kctg-btn-danger kctg-btn-xs"
+                            data-id="{{id}}" type="button"><i class="fas fa-times"></i></button>
+                  {{else}}
+                    <span class="kctg-merch-cat-label kctg-label"><i class="fas fa-inbox kctg-dim"></i> {{name}}</span>
+                  {{/if}}
+                  <span class="kctg-hint kctg-dim" style="font-size:.66rem;margin-left:auto;">{{items.length}}</span>
+                </div>
+                {{#if items.length}}
+                <ul class="kctg-merch-inv-list">
+                  {{#each items}}
+                  {{!-- draggable; Shift/Ctrl+click for multi-select; drag to category section to reassign --}}
+                  <li class="kctg-merch-inv-row {{#if hidden}}kctg-merch-item-hidden{{/if}}"
+                      data-item-id="{{id}}" draggable="true">
+                    <i class="fas fa-grip-vertical kctg-merch-drag-handle"></i>
+                    <img src="{{img}}" class="kctg-item-img" onerror="this.src='icons/svg/item-bag.svg'" alt="{{name}}" />
+                    <span class="kctg-item-name">{{name}}</span>
+                    {{#if hasPrice}}
+                      <span class="kctg-merch-price">{{priceLabel}}</span>
+                    {{else}}
+                      <div class="kctg-merch-price-edit" title="Set a custom price for this item">
+                        <input class="kctg-merch-price-ov-val kctg-input-qty" type="number"
+                               min="0" step="0.01" value="{{ovValue}}" data-id="{{id}}"
+                               placeholder="0" style="width:44px;" />
+                        <select class="kctg-merch-price-ov-denom kctg-select kctg-select-sm"
+                                data-id="{{id}}" style="width:44px;">
+                          <option value="cp" {{#if (eq ovDenom "cp")}}selected{{/if}}>cp</option>
+                          <option value="sp" {{#if (eq ovDenom "sp")}}selected{{/if}}>sp</option>
+                          <option value="gp" {{#if (eq ovDenom "gp")}}selected{{/if}}>gp</option>
+                          <option value="pp" {{#if (eq ovDenom "pp")}}selected{{/if}}>pp</option>
+                        </select>
+                      </div>
+                    {{/if}}
+                    <span class="kctg-item-qty">×{{qty}}</span>
+                    <button class="kctg-item-info kctg-btn-icon" data-item-id="{{id}}" type="button" title="Show description"><i class="fas fa-circle-info"></i></button>
+                    <button class="kctg-merch-item-hide kctg-btn-icon {{#if hidden}}kctg-is-hidden{{/if}}"
+                            data-id="{{id}}" type="button"
+                            title="{{#if hidden}}Visible to players again{{else}}Hide from players{{/if}}">
+                      <i class="fas {{#if hidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
+                    </button>
+                    <button class="kctg-merch-inv-remove kctg-btn kctg-btn-danger kctg-btn-xs"
+                            data-id="{{id}}" type="button"><i class="fas fa-times"></i></button>
+                  </li>
+                  {{/each}}
+                </ul>
+                {{else}}
+                <div class="kctg-merch-cat-empty-drop">Drop items here</div>
+                {{/if}}
+              </div>
+              {{else}}
+              <div class="kctg-empty-state">
+                <i class="fas fa-box kctg-empty-icon"></i>
+                <p>No items stocked.</p>
+                <p class="kctg-subtle">Use <strong>Restock Now</strong> on the Stock Tables tab.</p>
+              </div>
+              {{/each}}
+            </div>
+            {{/if}}
+
+            {{!-- ORDERS TAB --}}
+            {{#if isTabOrders}}
+            <div class="kctg-merch-orders-tab">
+              <div class="kctg-merch-toolbar">
+                <span class="kctg-hint kctg-dim"><i class="fas fa-clipboard-list"></i> Player special requests</span>
+              </div>
+
+              {{#if pendingOrders.length}}
+              <div class="kctg-panel-header" style="margin:8px 12px 0;"><i class="fas fa-clock"></i> Pending ({{pendingOrders.length}})</div>
+              <ul class="kctg-merch-order-list">
+                {{#each pendingOrders}}
+                <li class="kctg-merch-order-card">
+                  <div class="kctg-merch-order-who"><i class="fas fa-user"></i> {{characterName}}</div>
+                  <div class="kctg-merch-order-desc">
+                    {{#if itemImg}}<img src="{{itemImg}}" onerror="this.src='icons/svg/item-bag.svg'" style="width:22px;height:22px;border-radius:3px;object-fit:cover;vertical-align:middle;margin-right:5px;" />{{/if}}
+                    {{#if itemUuid}}<a style="cursor:pointer;" onclick="game.modules.get('kctg-atelier')?.api?.openItem?.('{{itemUuid}}')">{{description}}</a>{{else}}{{description}}{{/if}}
+                  </div>
+                  {{#if note}}<div class="kctg-merch-order-note kctg-dim">{{note}}</div>{{/if}}
+                  <div class="kctg-merch-order-actions">
+                    <button class="kctg-merch-order-ready-btn kctg-btn kctg-btn-gold kctg-btn-xs" data-id="{{id}}" type="button">
+                      <i class="fas fa-check"></i> Mark Ready
+                    </button>
+                    <button class="kctg-merch-order-reject-btn kctg-btn kctg-btn-danger kctg-btn-xs" data-id="{{id}}" type="button">
+                      <i class="fas fa-times"></i> Decline
+                    </button>
+                  </div>
+                </li>
+                {{/each}}
+              </ul>
+              {{/if}}
+
+              {{#if readyOrders.length}}
+              <div class="kctg-panel-header" style="margin:8px 12px 0;"><i class="fas fa-check-circle" style="color:var(--kctg-success);"></i> Ready for Collection ({{readyOrders.length}})</div>
+              <ul class="kctg-merch-order-list">
+                {{#each readyOrders}}
+                <li class="kctg-merch-order-card kctg-merch-order-card--ready">
+                  <div class="kctg-merch-order-who"><i class="fas fa-user"></i> {{characterName}}</div>
+                  <div class="kctg-merch-order-desc">
+                    {{#if itemImg}}<img src="{{itemImg}}" onerror="this.src='icons/svg/item-bag.svg'" style="width:22px;height:22px;border-radius:3px;object-fit:cover;vertical-align:middle;margin-right:5px;" />{{/if}}
+                    {{#if itemUuid}}<a style="cursor:pointer;" onclick="game.modules.get('kctg-atelier')?.api?.openItem?.('{{itemUuid}}')">{{description}}</a>{{else}}{{description}}{{/if}}
+                  </div>
+                  <div class="kctg-merch-order-price">{{priceLabel}}</div>
+                  <button class="kctg-merch-order-reject-btn kctg-btn kctg-btn-danger kctg-btn-xs" data-id="{{id}}" type="button" title="Remove order">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </li>
+                {{/each}}
+              </ul>
+              {{/if}}
+
+              {{#unless pendingOrders.length}}{{#unless readyOrders.length}}
+              <div class="kctg-empty-state"><i class="fas fa-inbox kctg-empty-icon"></i><p>No special orders yet.</p></div>
+              {{/unless}}{{/unless}}
+            </div>
+            {{/if}}
+
+            {{!-- SETTINGS TAB --}}
+            {{#if isTabSettings}}
+            <div class="kctg-merch-settings-tab">
+
+              <div class="kctg-panel-header"><i class="fas fa-store"></i> Availability</div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Open for Business</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-open" type="checkbox" {{#if selected.openForBusiness}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Players can access this merchant's shop</span>
+              </div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Distance Limit</span>
+                <div class="kctg-merch-num-wrap">
+                  <input class="kctg-merch-distance kctg-input-qty" type="number" min="0" step="5"
+                         value="{{selected.distanceLimit}}" style="width:62px;" title="0 = unlimited" />
+                  <span class="kctg-merch-unit">{{#if selected.distanceLimit}}{{gridUnits}}{{else}}(off){{/if}}</span>
+                </div>
+                <span class="kctg-hint kctg-dim">Max range for players to interact  (0 = no limit)</span>
+              </div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Hide Token When Closed</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-hide-closed" type="checkbox" {{#if selected.hideWhenClosed}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Make the merchant token invisible when not open for business</span>
+              </div>
+
+              <div class="kctg-panel-header" style="margin-top:10px;"><i class="fas fa-coins"></i> Pricing</div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Sell Price Modifier</span>
+                <div class="kctg-merch-num-wrap">
+                  <input class="kctg-merch-price-mod kctg-input-qty" type="number" min="1" max="500" step="5"
+                         value="{{selected.priceModifier}}" style="width:62px;" />
+                  <span class="kctg-merch-unit">%</span>
+                </div>
+                <span class="kctg-hint kctg-dim">of base item price  (100 = normal)</span>
+              </div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Purchase Only</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-purchase-only" type="checkbox" {{#if selected.purchaseOnly}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Players cannot sell items to this merchant</span>
+              </div>
+
+              {{#unless selected.purchaseOnly}}
+              <div class="kctg-merch-setting-row kctg-merch-setting-indent">
+                <span class="kctg-merch-setting-lbl">Buy Price</span>
+                <div class="kctg-merch-num-wrap">
+                  <input class="kctg-merch-buy-mod kctg-input-qty" type="number" min="1" max="200" step="5"
+                         value="{{selected.buyModifier}}" style="width:62px;" />
+                  <span class="kctg-merch-unit">%</span>
+                </div>
+                <span class="kctg-hint kctg-dim">of base price paid to the player when selling</span>
+              </div>
+              <div class="kctg-merch-setting-row kctg-merch-setting-indent">
+                <span class="kctg-merch-setting-lbl">Only Base Price</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-base-price-only" type="checkbox" {{#if selected.onlyBasePrice}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Sold items must use base price; no custom prices</span>
+              </div>
+              <div class="kctg-merch-setting-row kctg-merch-setting-indent">
+                <span class="kctg-merch-setting-lbl">Infinite Currency</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-inf-currency" type="checkbox" {{#if selected.infiniteCurrency}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Buying items never depletes merchant currency</span>
+              </div>
+              <div class="kctg-merch-setting-row kctg-merch-setting-indent">
+                <span class="kctg-merch-setting-lbl">Hide Sold Items</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-hide-sold" type="checkbox" {{#if selected.hideNewlySold}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Items sold to this merchant are auto-hidden from players</span>
+              </div>
+              {{/unless}}
+
+              <div class="kctg-panel-header" style="margin-top:10px;"><i class="fas fa-boxes"></i> Stock</div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Infinite Quantity</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-infinite" type="checkbox" {{#if selected.infiniteQuantity}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">This merchant never runs out of any item</span>
+              </div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Keep Zero-Qty Items</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-zero-qty" type="checkbox" {{#if selected.keepZeroQuantity}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Show sold-out items as unavailable instead of removing them</span>
+              </div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Log Activity</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-log" type="checkbox" {{#if selected.logActivity}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Log all buy/sell transactions to the chat</span>
+              </div>
+
+              <div class="kctg-panel-header" style="margin-top:10px;"><i class="fas fa-scroll"></i> Quest Link</div>
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Linked Quest</span>
+                <div class="kctg-merch-quest-slot kctg-drop-zone" style="flex:1;padding:4px 8px;justify-content:flex-start;">
+                  {{#if linkedQuestName}}
+                    <i class="fas fa-scroll" style="color:var(--kctg-amber);"></i>
+                    <span style="flex:1;font-size:.8rem;">{{linkedQuestName}}</span>
+                    <button class="kctg-merch-quest-clear kctg-btn kctg-btn-danger kctg-btn-xs" type="button"><i class="fas fa-times"></i></button>
+                  {{else}}
+                    <i class="fas fa-scroll kctg-dim"></i>
+                    <span class="kctg-hint kctg-dim" style="font-size:.76rem;">Drop a Quest page here — restocks on completion</span>
+                  {{/if}}
+                </div>
+              </div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Scheduled Restock</span>
+                <div class="kctg-merch-num-wrap">
+                  <input class="kctg-merch-restock-days kctg-input-qty" type="number" min="0" step="1"
+                         value="{{selected.restockEveryDays}}" style="width:62px;"
+                         title="Auto-restock from the stock tables every N workshop days (0 = off)" />
+                  <span class="kctg-merch-unit">days</span>
+                </div>
+                <span class="kctg-hint kctg-dim">Rolls the stock tables automatically every N workshop days (0 = off)</span>
+              </div>
+
+              <div class="kctg-panel-header" style="margin-top:10px;"><i class="fas fa-medal"></i> Influence</div>
+
+              <div class="kctg-merch-setting-row">
+                <span class="kctg-merch-setting-lbl">Enable Influence</span>
+                <label class="kctg-merch-toggle">
+                  <input class="kctg-merch-rep-enabled" type="checkbox" {{#if selected.repEnabled}}checked{{/if}} />
+                  <span class="kctg-merch-toggle-track"></span>
+                </label>
+                <span class="kctg-hint kctg-dim">Players build influence by trading (and/or GM award), unlocking each tier's price adjustment</span>
+              </div>
+
+              {{#if selected.repEnabled}}
+              <div class="kctg-merch-setting-row kctg-merch-setting-indent">
+                <span class="kctg-merch-setting-lbl">Gold per Point</span>
+                <div class="kctg-merch-num-wrap">
+                  <input class="kctg-merch-rep-gpp kctg-input-qty" type="number" min="1" step="1"
+                         value="{{selected.repGoldPerPoint}}" style="width:62px;" title="gp of trade to earn 1 influence point (set very high to rely on manual awards only)" />
+                  <span class="kctg-merch-unit">gp/pt</span>
+                </div>
+                <span class="kctg-hint kctg-dim">gp of trade per influence point earned automatically</span>
+              </div>
+
+              {{!-- Configurable tier table --}}
+              <div class="kctg-merch-tier-editor">
+                <div class="kctg-merch-tier-head">
+                  <span>Tier label</span><span>At pts</span><span>Discount %</span><span></span>
+                </div>
+                {{#each influenceTiers}}
+                <div class="kctg-merch-tier-row">
+                  <input class="kctg-merch-tier-label kctg-input kctg-input-sub" type="text" value="{{label}}" data-id="{{id}}" placeholder="Tier" />
+                  <input class="kctg-merch-tier-min kctg-input-qty" type="number" min="0" step="10" value="{{min}}" data-id="{{id}}" />
+                  <input class="kctg-merch-tier-discount kctg-input-qty" type="number" step="1" value="{{discount}}" data-id="{{id}}" title="Positive = discount, negative = surcharge" />
+                  <button class="kctg-merch-tier-remove kctg-btn kctg-btn-danger kctg-btn-xs" data-id="{{id}}" type="button"><i class="fas fa-times"></i></button>
+                </div>
+                {{/each}}
+                <button class="kctg-merch-tier-add kctg-btn kctg-btn-outline kctg-btn-xs" type="button" style="margin-top:4px;"><i class="fas fa-plus"></i> Add Tier</button>
+                <p class="kctg-hint kctg-dim" style="font-size:.72rem;margin:4px 0 0;">Discount applies to purchases. A <strong>negative</strong> value charges <em>more</em> (a surcharge for low standing) — set these manually.</p>
+              </div>
+
+              {{!-- Per-player standings (editable) --}}
+              <div class="kctg-merch-tier-editor" style="margin-top:8px;">
+                <div class="kctg-merch-tier-head" style="grid-template-columns:1fr 70px auto;">
+                  <span>Player</span><span>Points</span><span></span>
+                </div>
+                {{#if repStandings.length}}
+                  {{#each repStandings}}
+                  <div class="kctg-merch-tier-row" style="grid-template-columns:1fr 70px auto;">
+                    <span style="font-size:.78rem;"><strong style="color:{{tierColor}};">{{tierLabel}}</strong> — {{name}}</span>
+                    <input class="kctg-merch-inf-points kctg-input-qty" type="number" min="0" step="1" value="{{points}}" data-user-id="{{userId}}" />
+                    <span></span>
+                  </div>
+                  {{/each}}
+                {{else}}
+                  <p class="kctg-hint kctg-dim" style="font-size:.74rem;margin:2px 0;">No players to track yet.</p>
+                {{/if}}
+                <button class="kctg-merch-rep-reset kctg-btn kctg-btn-danger kctg-btn-xs" type="button" style="margin-top:4px;"><i class="fas fa-undo"></i> Reset All</button>
+              </div>
+              {{/if}}
+
+            </div>
+            {{/if}}
+
+          {{else}}
+          {{!-- ════════════ PLAYER SHOP VIEW ════════════ --}}
+          <div class="kctg-merch-shop-view">
+
+            {{#if asShopper}}
+            <div class="kctg-merch-shopper-banner" style="display:flex;align-items:center;gap:8px;margin:6px 12px;padding:6px 10px;border:1px solid rgba(245,180,48,.3);border-left:3px solid #f5b430;border-radius:5px;font-size:.78rem;color:#f5b430;">
+              <i class="fas fa-eye"></i> Previewing as <strong>{{shopperName}}</strong> — deselect the token for full GM controls.
+            </div>
+            {{/if}}
+
+            {{!-- Influence badge --}}
+            {{#if rep}}
+            <div class="kctg-merch-rep-bar">
+              <span class="kctg-merch-rep-tier" style="color:{{rep.tier.color}};">
+                <i class="fas fa-medal"></i> {{rep.tier.label}}
+              </span>
+              <div class="kctg-merch-rep-track">
+                <div class="kctg-merch-rep-fill" style="width:{{kctg_pct rep.progress}}%;background:{{rep.tier.color}};"></div>
+              </div>
+              {{#if rep.next}}
+              <span class="kctg-hint kctg-dim" style="font-size:.68rem;">{{rep.points}} / {{rep.next.min}}</span>
+              {{/if}}
+              {{#if rep.tier.discount}}
+              <span class="kctg-merch-rep-discount" title="Your current price adjustment">{{rep.discountText}}</span>
+              {{/if}}
+            </div>
+            {{/if}}
+
+            {{!-- Sell toolbar (shown when merchant buys items) --}}
+            {{#unless selected.purchaseOnly}}
+            <div class="kctg-merch-shop-toolbar">
+              <span class="kctg-hint kctg-dim" style="font-size:.76rem;">
+                <i class="fas fa-coins"></i> Buying price: <strong>{{selected.buyModifier}}%</strong>
+              </span>
+              <button class="kctg-merch-sell-picker-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button">
+                <i class="fas fa-hand-holding-usd"></i> Sell Items
+              </button>
+            </div>
+            {{/unless}}
+
+            {{#if shopByCategory.length}}
+              {{#each shopByCategory}}
+              <div class="kctg-merch-shop-category">
+                <div class="kctg-panel-header"><i class="fas fa-tag kctg-dim"></i> {{name}}</div>
+                <ul class="kctg-merch-shop-list">
+                  {{#each items}}
+                  <li class="kctg-merch-shop-row">
+                    <img src="{{img}}" class="kctg-item-img" onerror="this.src='icons/svg/item-bag.svg'" alt="{{name}}" />
+                    <span class="kctg-item-name">{{name}}</span>
+                    {{#if priceLabel}}<span class="kctg-merch-price">{{priceLabel}}</span>{{/if}}
+                    {{#if ../selected.infiniteQuantity}}
+                      <span class="kctg-item-qty" title="Unlimited stock">∞</span>
+                    {{else}}
+                      <span class="kctg-item-qty {{#unless qty}}kctg-dim{{/unless}}">×{{qty}}</span>
+                    {{/if}}
+                    <button class="kctg-item-info kctg-btn-icon" data-item-id="{{id}}" type="button" title="Show description"><i class="fas fa-circle-info"></i></button>
+                    {{!-- Buy button: disabled for sold-out items --}}
+                    {{#if (kctg_or ../selected.infiniteQuantity qty)}}
+                    <button class="kctg-merch-buy-btn kctg-btn kctg-btn-gold kctg-btn-xs"
+                            data-item-id="{{id}}" type="button">
+                      <i class="fas fa-shopping-cart"></i> Buy
+                    </button>
+                    {{else}}
+                    <span class="kctg-merch-sold-out">Sold out</span>
+                    {{/if}}
+                  </li>
+                  {{/each}}
+                </ul>
+              </div>
+              {{/each}}
+
+              {{!-- Sell drop zone (non-purchase-only merchants) --}}
+              {{#unless selected.purchaseOnly}}
+              <div class="kctg-merch-sell-zone kctg-drop-zone" style="margin:6px 12px 10px;">
+                <i class="fas fa-hand-holding-usd"></i> Drag an item from your sheet here to sell it
+              </div>
+              {{/unless}}
+
+            {{else}}
+            <div class="kctg-empty-state">
+              <i class="fas fa-store kctg-empty-icon"></i>
+              <p>Nothing for sale right now.</p>
+            </div>
+            {{/if}}
+
+            {{!-- Player's special orders section --}}
+            {{#unless selected.purchaseOnly}}
+            <div class="kctg-merch-my-orders">
+              <div class="kctg-panel-header" style="margin:8px 12px 4px;"><i class="fas fa-clipboard-list"></i> Special Orders</div>
+              {{#if myOrders.length}}
+              <ul class="kctg-merch-order-list" style="padding:0 12px 6px;">
+                {{#each myOrders}}
+                <li class="kctg-merch-order-card {{#if (eq status 'ready')}}kctg-merch-order-card--ready{{/if}}">
+                  <div class="kctg-merch-order-desc">
+                    {{#if itemImg}}<img src="{{itemImg}}" onerror="this.src='icons/svg/item-bag.svg'" style="width:22px;height:22px;border-radius:3px;object-fit:cover;vertical-align:middle;margin-right:5px;" />{{/if}}
+                    {{description}}
+                  </div>
+                  {{#if (eq status 'ready')}}<div class="kctg-merch-order-price"><i class="fas fa-check-circle" style="color:var(--kctg-success);"></i> Ready — {{priceLabel}}</div>{{/if}}
+                  {{#if (eq status 'pending')}}<div class="kctg-hint kctg-dim" style="font-size:.72rem;"><i class="fas fa-clock"></i> Awaiting merchant</div>{{/if}}
+                </li>
+                {{/each}}
+              </ul>
+              {{/if}}
+              <div style="padding:0 12px 10px;display:flex;flex-direction:column;gap:6px;">
+                <div class="kctg-merch-order-drop kctg-drop-zone" style="padding:8px;justify-content:center;font-size:.76rem;">
+                  <i class="fas fa-hand-sparkles"></i> Drag an item here to request it
+                </div>
+                <button class="kctg-merch-request-order-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button">
+                  <i class="fas fa-plus"></i> Request an Item (describe)
+                </button>
+              </div>
+            </div>
+            {{/unless}}
+
+          </div>{{!-- end shop-view --}}
+          {{/if}}{{!-- end isGM / player split --}}
+
+        </div>{{!-- end tab content --}}
+
+      {{else}}
+        <div class="kctg-empty-state" style="flex:1;">
+          <i class="fas fa-store kctg-empty-icon" style="opacity:.18;font-size:2.6rem;"></i>
+          <p>Not configured as a merchant yet.</p>
+          {{#if isGM}}<p class="kctg-subtle">Click <strong>Enable as Merchant</strong> to set it up.</p>{{/if}}
+        </div>
+      {{/if}}{{!-- end if selected.enabled --}}
+
+    {{else}}
+      <div class="kctg-empty-state" style="flex:1;">
+        <i class="fas fa-store kctg-empty-icon"></i>
+        <p>{{#if isGM}}Select a merchant or drop an Actor on the left.{{else}}No shops available nearby.{{/if}}</p>
+      </div>
+    {{/if}}{{!-- end if selected --}}
+
+  </div>{{!-- end detail --}}
+
+</div>

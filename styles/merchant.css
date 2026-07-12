@@ -1,0 +1,846 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   KCTG Merchants — Two-panel merchant system
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+/* The shared tab bar clips (never scrolls) when the window is too narrow, so
+   enforce a window width that keeps all 4 GM tabs reachable next to the
+   merchant list panel. ApplicationV2's resize handle respects CSS min-width. */
+.application.kctg-merchants-app { min-width: 700px; }
+
+.kctg-merchants-inner {
+  display:        flex;
+  flex-direction: row;
+  height:         100%;
+  overflow:       hidden;
+  padding:        0;
+  gap:            0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LEFT PANEL — merchant list
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merchant-list-panel {
+  width:           220px;
+  min-width:       140px;
+  max-width:       380px;
+  flex-shrink:     0;
+  display:         flex;
+  flex-direction:  column;
+  background:      rgba(6,5,12,0.97);
+  border-right:    1px solid var(--kctg-border-dim);
+  overflow:        hidden;
+}
+
+.kctg-merch-list-header {
+  padding:       10px 12px 7px;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink:   0;
+}
+
+.kctg-merchant-list {
+  list-style:  none;
+  margin:      0;
+  padding:     6px 0;
+  flex:        1;
+  overflow-y:  auto;
+  min-height:  0;
+}
+
+.kctg-merchant-list-row {
+  display:      flex;
+  align-items:  center;
+  gap:          9px;
+  padding:      7px 10px;
+  cursor:       pointer;
+  border-left:  3px solid transparent;
+  transition:   background var(--kctg-ease), border-color var(--kctg-ease);
+}
+.kctg-merchant-list-row:hover {
+  background:   var(--kctg-amber-soft);
+  border-color: var(--kctg-amber-line);
+}
+.kctg-merchant-list-row.kctg-selected {
+  background:   rgba(245,180,48,0.09);
+  border-color: var(--kctg-amber);
+}
+
+/* Small portrait thumbnail — like quest list, small square with cover */
+.kctg-merch-list-thumb {
+  width:           34px;
+  height:          34px;
+  flex-shrink:     0;
+  border-radius:   var(--kctg-radius);
+  background-size: cover;
+  background-position: center top;
+  border:          1px solid var(--kctg-border-dim);
+  background-color: var(--kctg-bg-raised);
+  /* Subtle desaturated tint to keep visual unity */
+  filter: saturate(0.55) brightness(0.90);
+}
+
+.kctg-merch-list-name {
+  flex:          1;
+  font-size:     0.82rem;
+  color:         var(--kctg-text-dim);
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  white-space:   nowrap;
+}
+.kctg-merchant-list-row.kctg-selected .kctg-merch-list-name { color: var(--kctg-text); }
+
+.kctg-merch-open-dot {
+  width:         7px;
+  height:        7px;
+  border-radius: 50%;
+  background:    var(--kctg-success);
+  flex-shrink:   0;
+  box-shadow:    0 0 5px rgba(90,173,90,0.55);
+}
+
+.kctg-merch-actor-drop {
+  margin:      8px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RIGHT PANEL — detail + art layer
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merchant-detail {
+  flex:           1;
+  min-width:      0;
+  display:        flex;
+  flex-direction: column;
+  overflow:       hidden;
+  position:       relative;  /* needed for absolute art layer */
+}
+
+/* Art layer: portrait bleeds in from top-right, masked and desaturated.
+   Mirrors .kctg-q-art-layer exactly. */
+.kctg-merch-art-layer {
+  position:            absolute;
+  top:                 0;
+  right:               0;
+  bottom:              0;
+  width:               55%;
+  pointer-events:      none;
+  background-size:     cover;
+  background-position: center top;
+  background-repeat:   no-repeat;
+  -webkit-mask-image:
+    linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 68%, transparent 100%),
+    linear-gradient(to left,   rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.35) 45%, transparent 80%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 68%, transparent 100%),
+    linear-gradient(to left,   rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.35) 45%, transparent 80%);
+  mask-composite:      intersect;
+  opacity:             0.40;
+  mix-blend-mode:      luminosity;
+}
+
+/* ── Merchant header ─────────────────────────────────────────────────────── */
+.kctg-merch-header {
+  display:         flex;
+  align-items:     center;
+  gap:             12px;
+  padding:         14px 16px 12px;
+  border-bottom:   1px solid var(--kctg-border-dim);
+  flex-shrink:     0;
+  position:        relative; /* sits above art layer */
+}
+
+.kctg-merch-header-body {
+  flex:           1;
+  display:        flex;
+  flex-direction: column;
+  gap:            6px;
+}
+
+/* Actor name — regular font (NOT YellowMagician: that font has no lowercase) */
+.kctg-merch-hero-name {
+  font-size:   1.05rem;
+  font-weight: 700;
+  color:       var(--kctg-text);
+  line-height: 1.2;
+  font-family: var(--kctg-font);
+}
+
+.kctg-merch-hero-meta {
+  display:     flex;
+  align-items: center;
+  flex-wrap:   wrap;
+  gap:         6px;
+}
+
+.kctg-merch-header-actions {
+  flex-shrink: 0;
+  display:     flex;
+  align-items: center;
+}
+
+/* Status badges */
+.kctg-merch-badge {
+  display:        inline-flex;
+  align-items:    center;
+  gap:            4px;
+  font-size:      0.67rem;
+  font-weight:    700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding:        2px 8px;
+  border-radius:  var(--kctg-radius-pill);
+  border:         1px solid transparent;
+}
+.kctg-merch-badge--active {
+  background:   rgba(245,180,48,0.13);
+  border-color: rgba(245,180,48,0.28);
+  color:        var(--kctg-amber);
+}
+.kctg-merch-badge--open {
+  background:   rgba(90,173,90,0.11);
+  border-color: rgba(90,173,90,0.25);
+  color:        var(--kctg-success);
+}
+.kctg-merch-badge--closed {
+  background:   rgba(130,120,105,0.09);
+  border-color: rgba(130,120,105,0.18);
+  color:        var(--kctg-text-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAB CONTENT
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-tab-content {
+  flex:           1;
+  display:        flex;
+  flex-direction: column;
+  overflow-y:     auto;
+  min-height:     0;
+  position:       relative;
+}
+
+.kctg-merch-toolbar {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             10px;
+  padding:         9px 14px;
+  border-bottom:   1px solid var(--kctg-border-dim);
+  flex-shrink:     0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STOCK TABLES TAB
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-tables-tab {
+  display:        flex;
+  flex-direction: column;
+  flex:           1;
+  padding-bottom: 10px;
+}
+
+.kctg-merch-table-list {
+  list-style:     none;
+  margin:         0;
+  padding:        8px 12px;
+  display:        flex;
+  flex-direction: column;
+  gap:            7px;
+}
+
+.kctg-merch-table-card {
+  background:     var(--kctg-bg-raised);
+  border:         1px solid var(--kctg-border-dim);
+  border-radius:  var(--kctg-radius-card);
+  padding:        9px 12px;
+  display:        flex;
+  flex-direction: column;
+  gap:            7px;
+  transition:     border-color var(--kctg-ease), opacity var(--kctg-ease);
+}
+.kctg-merch-table-card:hover { border-color: var(--kctg-amber-line); }
+.kctg-merch-table-card--disabled { opacity: 0.42; }
+
+.kctg-merch-table-top {
+  display:     flex;
+  align-items: center;
+  gap:         9px;
+}
+
+.kctg-merch-active-toggle {
+  display:     flex;
+  align-items: center;
+  cursor:      pointer;
+  flex-shrink: 0;
+}
+.kctg-merch-active-toggle input[type="checkbox"] {
+  cursor:       pointer;
+  accent-color: var(--kctg-amber);
+  width:        14px;
+  height:       14px;
+}
+
+.kctg-merch-table-icon {
+  width:         26px;
+  height:        26px;
+  border-radius: 3px;
+  object-fit:    cover;
+  flex-shrink:   0;
+  opacity:       0.80;
+}
+
+.kctg-merch-table-name {
+  flex:          1;
+  font-size:     0.86rem;
+  font-weight:   600;
+  color:         var(--kctg-text);
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  white-space:   nowrap;
+}
+
+.kctg-merch-table-cfg {
+  display:     flex;
+  align-items: center;
+  flex-wrap:   wrap;
+  gap:         8px 14px;
+  padding-top: 4px;
+  border-top:  1px dashed var(--kctg-line);
+}
+
+.kctg-merch-cfg-lbl {
+  display:        flex;
+  align-items:    center;
+  gap:            5px;
+  font-size:      0.71rem;
+  color:          var(--kctg-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space:    nowrap;
+  flex-shrink:    0;
+}
+
+.kctg-merch-cfg-check {
+  display:     flex;
+  align-items: center;
+  gap:         5px;
+  font-size:   0.76rem;
+  color:       var(--kctg-text-dim);
+  cursor:      pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+.kctg-merch-cfg-check input[type="checkbox"] {
+  cursor:       pointer;
+  accent-color: var(--kctg-amber);
+}
+
+.kctg-merch-table-drop {
+  margin:      0 12px;
+  flex-shrink: 0;
+}
+
+/* ── Shared container — zero padding so border-bottom extends full width ── */
+.kctg-merch-stock-preview,
+.kctg-merch-inv-list {
+  list-style:     none;
+  margin:         0;
+  padding:        0;
+  display:        flex;
+  flex-direction: column;
+  gap:            0;
+}
+
+/* ── Unified item row — identical for stock AND inventory ─────────────────── */
+.kctg-merch-stock-row,
+.kctg-merch-inv-row {
+  display:       flex;
+  align-items:   center;
+  gap:           6px;
+  padding:       3px 14px;
+  border:        none;
+  border-radius: 0;
+  border-bottom: 1px solid var(--kctg-line);
+  font-size:     0.77rem;
+  min-height:    23px;
+  background:    transparent;
+  cursor:        pointer;
+  transition:    background var(--kctg-ease);
+}
+.kctg-merch-stock-row:last-child,
+.kctg-merch-inv-row:last-child   { border-bottom: none; }
+.kctg-merch-stock-row:hover,
+.kctg-merch-inv-row:hover        { background: rgba(245,180,48,0.04); }
+
+/* Allow an expandable description panel to wrap onto its own full-width line */
+.kctg-merch-stock-row,
+.kctg-merch-inv-row,
+.kctg-merch-shop-row { flex-wrap: wrap; }
+.kctg-item-desc {
+  flex:          0 0 100%;
+  width:         100%;
+  margin:        4px 0 6px;
+  padding:       6px 9px;
+  border-top:    1px dashed var(--kctg-line);
+  background:    rgba(255,255,255,0.025);
+  border-radius: 4px;
+  font-size:     0.78rem;
+  line-height:   1.45;
+  color:         var(--kctg-text-dim);
+  cursor:        default;
+}
+.kctg-item-desc img { max-width: 100%; height: auto; }
+.kctg-item-desc :is(h1,h2,h3,h4) { font-size: 0.85rem; margin: 4px 0 2px; }
+.kctg-item-desc p { margin: 0 0 4px; }
+
+/* Shared sub-element sizing — both row types identical */
+.kctg-merch-stock-row .kctg-item-img,
+.kctg-merch-inv-row   .kctg-item-img   { width: 18px; height: 18px; }
+.kctg-merch-stock-row .kctg-btn-icon,
+.kctg-merch-inv-row   .kctg-btn-icon   { width: 18px; height: 18px; font-size: 0.70rem; }
+.kctg-merch-stock-row .kctg-btn-xs,
+.kctg-merch-inv-row   .kctg-btn-xs     { padding: 1px 4px; font-size: 0.66rem; min-height: 16px; }
+.kctg-merch-stock-row .kctg-merch-price-edit input,
+.kctg-merch-stock-row .kctg-merch-price-edit select,
+.kctg-merch-inv-row   .kctg-merch-price-edit input,
+.kctg-merch-inv-row   .kctg-merch-price-edit select { height: 18px; padding: 1px 3px; font-size: 0.70rem; }
+
+/* Hidden: opacity only, no strikethrough */
+.kctg-merch-item-hidden { opacity: 0.38; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   INVENTORY TAB (categories)
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-inventory-tab {
+  display:        flex;
+  flex-direction: column;
+  flex:           1;
+}
+
+.kctg-merch-cat-section {
+  display:        flex;
+  flex-direction: column;
+  border-bottom:  1px dashed var(--kctg-line);
+  padding-bottom: 2px;
+  margin-bottom:  0;
+}
+
+.kctg-merch-cat-header {
+  display:     flex;
+  align-items: center;
+  gap:         6px;
+  padding:     3px 10px;
+}
+
+.kctg-merch-cat-label {
+  flex: 1;
+}
+
+.kctg-merch-inv-list {
+  list-style:     none;
+  margin:         0;
+  padding:        2px 10px 4px;
+  display:        flex;
+  flex-direction: column;
+  gap:            2px;
+}
+
+/* inv-row specific: selected + dragging states */
+
+/* Stock tab category sub-headers */
+.kctg-merch-stock-cat-header {
+  display:     flex;
+  align-items: center;
+  gap:         6px;
+  padding:     5px 14px 3px;
+  border-bottom: 1px dashed var(--kctg-line);
+}
+
+/* Drag handle in inventory rows */
+.kctg-merch-drag-handle {
+  font-size:    0.60rem;
+  color:        var(--kctg-text-muted);
+  opacity:      0.30;
+  cursor:       grab;
+  flex-shrink:  0;
+  transition:   opacity var(--kctg-ease);
+}
+.kctg-merch-inv-row:hover .kctg-merch-drag-handle,
+.kctg-merch-stock-row:hover .kctg-merch-drag-handle { opacity: 0.65; }
+
+/* Multi-select / dragging states — both row types */
+.kctg-merch-inv-row.kctg-item-selected,
+.kctg-merch-stock-row.kctg-item-selected {
+  background:    rgba(245,180,48,0.11) !important;
+  border-bottom-color: rgba(245,180,48,0.30) !important;
+}
+.kctg-merch-inv-row.kctg-item-dragging,
+.kctg-merch-stock-row.kctg-item-dragging { opacity: 0.38; }
+
+/* Category section as drag target */
+.kctg-merch-cat-section { transition: background var(--kctg-ease); }
+.kctg-merch-cat-section.kctg-drag-over {
+  background:    rgba(245,180,48,0.07) !important;
+  border-radius: var(--kctg-radius);
+  outline:       1px dashed var(--kctg-amber-line);
+}
+
+/* Empty drop zone label inside category */
+.kctg-merch-cat-empty-drop {
+  padding:    4px 12px 6px;
+  font-size:  0.72rem;
+  color:      var(--kctg-text-muted);
+  font-style: italic;
+  opacity:    0.55;
+}
+
+/* Inline price editor for 0-value items */
+.kctg-merch-price-edit {
+  display:     flex;
+  align-items: center;
+  gap:         2px;
+  flex-shrink: 0;
+}
+
+.kctg-merch-price {
+  font-size:   0.74rem;
+  color:       var(--kctg-amber);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Hidden/visible toggle icon */
+.kctg-merch-item-hide {
+  color:      var(--kctg-text-muted);
+  opacity:    0.50;
+  flex-shrink: 0;
+}
+.kctg-merch-item-hide:hover,
+.kctg-merch-item-hide.kctg-is-hidden { color: var(--kctg-amber); opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SETTINGS TAB
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-settings-tab {
+  padding:        10px 14px;
+  display:        flex;
+  flex-direction: column;
+  gap:            0;
+}
+
+/* Two-column layout: [label .......... control], with the description on a
+   full-width second line. The control column is `auto` and right-aligned, so every
+   toggle / number box lines up on the same right edge regardless of label length. */
+.kctg-merch-setting-row {
+  display:               grid;
+  grid-template-columns: 1fr auto;
+  align-items:           center;
+  column-gap:            10px;
+  row-gap:               2px;
+  padding:               7px 0;
+  border-bottom:         1px dashed var(--kctg-line);
+}
+.kctg-merch-setting-row:last-child { border-bottom: none; }
+
+/* Indented sub-setting: shift the whole row right */
+.kctg-merch-setting-indent {
+  padding-left: 20px;
+  opacity:      0.90;
+}
+
+.kctg-merch-setting-lbl {
+  grid-column: 1;
+  grid-row:    1;
+  font-size:   0.82rem;
+  font-weight: 600;
+  color:       var(--kctg-text-dim);
+  line-height: 1.3;
+}
+
+/* Every control (toggle or number box) sits top-right on row 1 → aligned edge */
+.kctg-merch-setting-row > .kctg-merch-toggle,
+.kctg-merch-setting-row > .kctg-merch-num-wrap {
+  grid-column:  2;
+  grid-row:     1;
+  justify-self: end;
+}
+
+/* Number + unit */
+.kctg-merch-num-wrap {
+  display:     flex;
+  align-items: center;
+  gap:         4px;
+}
+.kctg-merch-unit {
+  font-size:   0.74rem;
+  color:       var(--kctg-text-muted);
+  white-space: nowrap;
+}
+
+/* Hints drop onto a full-width second line so row 1 always stays aligned */
+.kctg-merch-settings-tab .kctg-hint {
+  grid-column: 1 / -1;
+  grid-row:    2;
+  font-size:   0.76rem;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+/* Quest drop zone spans the full width below its label — a roomy drop target */
+.kctg-merch-setting-row > .kctg-merch-quest-slot {
+  grid-column: 1 / -1;
+  grid-row:    2;
+  width:       100%;
+  margin-top:  4px;
+}
+
+/* Influence tier editor */
+.kctg-merch-tier-editor { padding: 4px 0 2px; }
+.kctg-merch-tier-head {
+  display:               grid;
+  grid-template-columns: 1fr 70px 80px auto;
+  gap:                   6px;
+  font-size:             0.64rem;
+  text-transform:        uppercase;
+  letter-spacing:        0.05em;
+  color:                 var(--kctg-text-muted);
+  padding:               0 2px 3px;
+}
+.kctg-merch-tier-row {
+  display:               grid;
+  grid-template-columns: 1fr 70px 80px auto;
+  gap:                   6px;
+  align-items:           center;
+  padding:               2px;
+}
+.kctg-merch-tier-row input { width: 100%; }
+
+/* Toggle switch */
+.kctg-merch-toggle {
+  position:    relative;
+  display:     inline-flex;
+  align-items: center;
+  cursor:      pointer;
+  flex-shrink: 0;
+}
+.kctg-merch-toggle input[type="checkbox"] { opacity:0; width:0; position:absolute; }
+.kctg-merch-toggle-track {
+  width:         36px;
+  height:        18px;
+  background:    rgba(150,140,120,0.18);
+  border:        1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius-pill);
+  position:      relative;
+  transition:    background var(--kctg-ease), border-color var(--kctg-ease);
+}
+.kctg-merch-toggle-track::after {
+  content:       "";
+  position:      absolute;
+  top:2px; left:2px;
+  width:12px; height:12px;
+  background:    var(--kctg-text-muted);
+  border-radius: 50%;
+  transition:    left var(--kctg-ease), background var(--kctg-ease);
+}
+.kctg-merch-toggle input:checked + .kctg-merch-toggle-track {
+  background:   rgba(245,180,48,0.22);
+  border-color: rgba(245,180,48,0.40);
+}
+.kctg-merch-toggle input:checked + .kctg-merch-toggle-track::after {
+  left:20px; background:var(--kctg-amber);
+}
+.kctg-merch-toggle input:disabled + .kctg-merch-toggle-track { opacity:0.40; cursor:not-allowed; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PLAYER SHOP VIEW
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-shop-view {
+  display:        flex;
+  flex-direction: column;
+  flex:           1;
+  overflow-y:     auto;
+  padding:        4px 0;
+}
+
+.kctg-merch-shop-toolbar {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             10px;
+  padding:         8px 14px;
+  border-bottom:   1px solid var(--kctg-border-dim);
+  flex-shrink:     0;
+}
+
+.kctg-merch-shop-category {
+  padding: 0 0 6px;
+}
+
+.kctg-merch-shop-list {
+  list-style:     none;
+  margin:         0;
+  padding:        2px 12px;
+  display:        flex;
+  flex-direction: column;
+  gap:            3px;
+}
+
+.kctg-merch-shop-row {
+  display:       flex;
+  align-items:   center;
+  gap:           9px;
+  padding:       6px 9px;
+  background:    var(--kctg-bg-raised);
+  border:        1px solid var(--kctg-border-dim);
+  border-radius: var(--kctg-radius);
+  font-size:     0.82rem;
+  transition:    border-color var(--kctg-ease), background var(--kctg-ease);
+}
+.kctg-merch-shop-row:hover { border-color: var(--kctg-amber-line); background: var(--kctg-entry-glass-hover); }
+
+/* New/unidentified item indicator */
+.kctg-merch-item-new {
+  border-color: rgba(245,180,48,0.25) !important;
+  background:   rgba(245,180,48,0.05) !important;
+}
+.kctg-merch-item-new .kctg-item-name { font-style: italic; color: var(--kctg-text-muted); }
+
+/* Buy button on shop rows */
+.kctg-merch-buy-btn {
+  flex-shrink:  0;
+  margin-left:  auto;
+  white-space:  nowrap;
+}
+
+/* Sold-out label */
+.kctg-merch-sold-out {
+  flex-shrink:    0;
+  margin-left:    auto;
+  font-size:      0.70rem;
+  color:          var(--kctg-text-muted);
+  font-style:     italic;
+  opacity:        0.55;
+}
+
+.kctg-merch-new-badge {
+  display:        inline-flex;
+  align-items:    center;
+  font-size:      0.60rem;
+  font-weight:    800;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding:        1px 6px;
+  border-radius:  var(--kctg-radius-pill);
+  background:     rgba(245,180,48,0.18);
+  border:         1px solid rgba(245,180,48,0.35);
+  color:          var(--kctg-amber);
+  margin-left:    4px;
+  vertical-align: middle;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REPUTATION BAR
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-rep-bar {
+  display:       flex;
+  align-items:   center;
+  gap:           8px;
+  padding:       6px 14px;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  flex-shrink:   0;
+}
+.kctg-merch-rep-tier {
+  font-size:   0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.kctg-merch-rep-track {
+  flex:          1;
+  height:        5px;
+  background:    rgba(150,140,120,0.18);
+  border-radius: var(--kctg-radius-pill);
+  overflow:      hidden;
+}
+.kctg-merch-rep-fill {
+  height:        100%;
+  border-radius: var(--kctg-radius-pill);
+  transition:    width 0.4s ease;
+  opacity:       0.80;
+}
+.kctg-merch-rep-discount {
+  font-size:    0.72rem;
+  font-weight:  700;
+  color:        var(--kctg-success);
+  flex-shrink:  0;
+  white-space:  nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPECIAL ORDERS
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merch-order-list {
+  list-style:     none;
+  margin:         0;
+  padding:        4px 12px 6px;
+  display:        flex;
+  flex-direction: column;
+  gap:            5px;
+}
+.kctg-merch-order-card {
+  background:     var(--kctg-bg-raised);
+  border:         1px solid var(--kctg-border-dim);
+  border-radius:  var(--kctg-radius-card);
+  padding:        7px 10px;
+  display:        flex;
+  flex-direction: column;
+  gap:            4px;
+  font-size:      0.82rem;
+  position:       relative;
+}
+.kctg-merch-order-card--ready {
+  border-color: rgba(90,173,90,0.35);
+  background:   rgba(90,173,90,0.06);
+}
+.kctg-merch-order-who   { font-size: 0.70rem; color: var(--kctg-text-muted); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.kctg-merch-order-desc  { color: var(--kctg-text); }
+.kctg-merch-order-note  { font-size: 0.76rem; font-style: italic; }
+.kctg-merch-order-price { font-size: 0.78rem; color: var(--kctg-success); font-weight: 700; }
+.kctg-merch-order-actions { display: flex; gap: 6px; margin-top: 4px; }
+.kctg-merch-my-orders { border-top: 1px dashed var(--kctg-line); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ACTOR SHEET HEADER BUTTON
+   ══════════════════════════════════════════════════════════════════════════ */
+.kctg-merchant-header-btn {
+  /* Reset all UA button defaults */
+  display:        inline-flex !important;
+  align-items:    center !important;
+  align-self:     center !important;
+  gap:            4px !important;
+  flex:           0 0 auto !important;
+  width:          auto !important;
+  height:         auto !important;
+  padding:        0 !important;
+  margin:         0 0 0 8px !important;
+  /* Inherit size and color from the window header, matching native <a> buttons */
+  font-size:      inherit !important;
+  font-family:    inherit !important;
+  font-weight:    inherit !important;
+  line-height:    inherit !important;
+  color:          inherit !important;
+  background:     transparent !important;
+  border:         none !important;
+  box-shadow:     none !important;
+  text-shadow:    none !important;
+  vertical-align: middle !important;
+  cursor:         pointer;
+  transition:     color 0.14s ease, text-shadow 0.14s ease;
+}
+.kctg-merchant-header-btn:hover {
+  color:       var(--kctg-amber, #f5b430) !important;
+  text-shadow: 0 0 8px rgba(245,180,48,0.4) !important;
+}
+/* Active state intentionally matches inactive — no special color */

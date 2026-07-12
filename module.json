@@ -1,0 +1,26 @@
+{
+  "id": "kctg-atelier",
+  "title": "KCTG Atelier",
+  "description": "Combined KCTG module: Forge crafting, Quest tracker, and Workshop manager.",
+  "version": "1.0.0",
+  "compatibility": { "minimum": "14", "verified": "14", "maximum": "14" },
+  "authors": [{ "name": "kristkos" }],
+  "esmodules": [
+    "scripts/forge.mjs",
+    "scripts/quests.mjs",
+    "scripts/workshop.mjs",
+    "scripts/merchant.mjs",
+    "scripts/dashboard.mjs"
+  ],
+  "styles": [
+    "styles/kctg-shared.css",
+    "styles/forge.css",
+    "styles/quests.css",
+    "styles/workshop.css",
+    "styles/merchant.css",
+    "styles/dashboard.css"
+  ],
+  "socket": true,
+  "languages": [],
+  "flags": {}
+}

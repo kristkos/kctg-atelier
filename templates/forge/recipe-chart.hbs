@@ -1,0 +1,61 @@
+<div class="kctg-app kctg-chart-inner">
+
+  <div class="kctg-chart-sidebar">
+    <div class="kctg-chart-sidebar-header">
+      <span>Recipes</span>
+      <div class="kctg-chart-sidebar-actions">
+        <button class="kctg-chart-select-all kctg-btn kctg-btn-xs kctg-btn-outline" type="button">All</button>
+        <button class="kctg-chart-select-none kctg-btn kctg-btn-xs kctg-btn-outline" type="button">None</button>
+      </div>
+    </div>
+    <input class="kctg-chart-filter kctg-input kctg-input-sm" type="text" placeholder="Filter…" value="{{chartFilter}}" />
+    <ul class="kctg-chart-recipe-list">
+      {{#each chartItems}}
+        {{#if isFolder}}
+          <li class="kctg-group-row kctg-chart-group-row" data-folder-id="{{id}}"
+              style="--group-color:{{#if color}}{{color}}{{else}}var(--kctg-russet){{/if}}">
+            <input class="kctg-chart-folder-check" type="checkbox" data-folder-id="{{id}}" {{#if allChecked}}checked{{/if}} {{#if someChecked}}data-indeterminate="1"{{/if}} title="Select / deselect all recipes in this folder" />
+            <div class="kctg-group-main" title="Click to collapse / expand">
+              <i class="fas {{#if collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} kctg-group-chevron"></i>
+              <span class="kctg-group-name">{{name}}</span>
+              <span class="kctg-group-line"></span>
+              <span class="kctg-group-count">{{selCount}}/{{count}}</span>
+            </div>
+          </li>
+        {{else}}
+          <li class="kctg-chart-recipe-item {{#if inFolder}}kctg-recipe-indented{{/if}}">
+            <label class="kctg-chart-recipe-label">
+              <input class="kctg-chart-recipe-check" type="checkbox" data-id="{{id}}" {{#if folderId}}data-folder-id="{{folderId}}"{{/if}} {{#if checked}}checked{{/if}} />
+              <span>{{name}}</span>
+            </label>
+          </li>
+        {{/if}}
+      {{else}}
+        <li class="kctg-subtle" style="padding:8px;">No recipes found.</li>
+      {{/each}}
+    </ul>
+    <div class="kctg-chart-legend">
+      <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-recipe"></span> Recipe</div>
+      <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-item-node"></span> Ingredient / Result</div>
+      <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-prereq"></span> Tool (not consumed)</div>
+      <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-line-solid"></span> consumed</div>
+      <div class="kctg-chart-legend-item"><span class="kctg-chart-legend-line-dashed"></span> required</div>
+      <p class="kctg-subtle" style="font-size:.72rem;margin-top:6px;">Drag nodes · Drag canvas to pan · Scroll to zoom</p>
+    </div>
+  </div>
+
+  <div class="kctg-chart-wrap">
+    <div class="kctg-chart-toolbar">
+      <button class="kctg-chart-zoom-in  kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Zoom in"><i class="fas fa-search-plus"></i></button>
+      <button class="kctg-chart-zoom-out kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Zoom out"><i class="fas fa-search-minus"></i></button>
+      <span class="kctg-chart-zoom-label">100%</span>
+      <div class="kctg-chart-toolbar-sep"></div>
+      <button class="kctg-chart-reset-view kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Reset pan and zoom"><i class="fas fa-compress-arrows-alt"></i> Reset View</button>
+      <button class="kctg-chart-reset-pos  kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Reset all node positions to default layout"><i class="fas fa-th"></i> Reset Layout</button>
+    </div>
+    <div class="kctg-chart-canvas">
+      {{!-- SVG and node divs are injected here by JS --}}
+    </div>
+  </div>
+
+</div>

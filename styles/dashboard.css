@@ -1,0 +1,145 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   KCTG Campaign Dashboard — compact flat-row layout
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.kctg-dashboard-inner {
+  display:        flex;
+  flex-direction: column;
+  padding:        0;
+  gap:            0;
+  min-width:      320px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.kctg-dash-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         8px 14px;
+  border-bottom:   1px solid var(--kctg-border-dim);
+  flex-shrink:     0;
+}
+
+/* Calendar date line, sits directly under the Campaign header (not a clickable row) */
+.kctg-dash-date {
+  padding:       6px 14px;
+  font-size:     0.80rem;
+  font-style:    italic;
+  color:         var(--kctg-gold-dim);
+  border-bottom: 1px solid var(--kctg-border-dim);
+}
+
+/* ── Row list ────────────────────────────────────────────────────────── */
+.kctg-dash-rows {
+  display:        flex;
+  flex-direction: column;
+}
+
+.kctg-dash-row {
+  display:       flex;
+  align-items:   center;
+  gap:           10px;
+  padding:       11px 14px;
+  border-bottom: 1px solid var(--kctg-border-dim);
+  /* Reset button styles */
+  background:    transparent;
+  border-left:   none;
+  border-right:  none;
+  border-top:    none;
+  border-radius: 0;
+  cursor:        pointer;
+  text-align:    left;
+  width:         100%;
+  transition:    background var(--kctg-ease);
+}
+.kctg-dash-row:last-child { border-bottom: none; }
+.kctg-dash-row:hover {
+  background: var(--kctg-amber-soft);
+}
+
+.kctg-dash-icon {
+  font-size:   0.80rem;
+  color:       var(--kctg-amber);
+  width:       14px;
+  text-align:  center;
+  flex-shrink: 0;
+}
+
+.kctg-dash-name {
+  font-size:   0.84rem;
+  font-weight: 700;
+  color:       var(--kctg-text);
+  width:       75px;
+  flex-shrink: 0;
+}
+
+.kctg-dash-stats {
+  flex:        1;
+  font-size:   0.78rem;
+  color:       var(--kctg-text-dim);
+  line-height: 1;
+  white-space: nowrap;
+  overflow:    hidden;
+  text-overflow: ellipsis;
+}
+
+.kctg-dash-dot {
+  margin:  0 4px;
+  color:   var(--kctg-border-dim);
+  opacity: 0.70;
+}
+
+.kctg-dash-chevron {
+  font-size:   0.62rem;
+  color:       var(--kctg-border-dim);
+  flex-shrink: 0;
+  transition:  color var(--kctg-ease);
+}
+.kctg-dash-row:hover .kctg-dash-chevron { color: var(--kctg-amber); }
+
+/* ── Recent activity feed ────────────────────────────────────────────── */
+.kctg-dash-activity {
+  border-top: 1px solid var(--kctg-border-dim);
+  padding:    6px 0 4px;
+}
+.kctg-dash-activity-header {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  padding:         2px 14px 4px;
+}
+.kctg-dash-activity-list {
+  list-style: none;
+  margin:     0;
+  padding:    0;
+  max-height: 168px;
+  overflow-y: auto;
+}
+.kctg-dash-activity-row {
+  display:     flex;
+  align-items: baseline;
+  gap:         8px;
+  padding:     4px 14px;
+  font-size:   0.74rem;
+  color:       var(--kctg-text-dim);
+}
+.kctg-dash-activity-row i {
+  font-size:   0.68rem;
+  color:       var(--kctg-amber);
+  width:       13px;
+  text-align:  center;
+  flex-shrink: 0;
+}
+.kctg-dash-activity-text {
+  flex:          1;
+  min-width:     0;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  white-space:   nowrap;
+}
+.kctg-dash-activity-day {
+  flex-shrink: 0;
+  font-size:   0.66rem;
+  color:       var(--kctg-text-muted);
+  white-space: nowrap;
+}

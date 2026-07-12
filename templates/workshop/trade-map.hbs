@@ -1,0 +1,157 @@
+<div class="kctg-app kctg-trade-map-inner">
+
+  {{!-- Toolbar --}}
+  <div class="kctg-map-toolbar">
+    {{#if isGM}}
+      <button class="kctg-map-toggle-edit kctg-btn kctg-btn-sm {{#if editMode}}kctg-btn-gold{{else}}kctg-btn-outline{{/if}}"
+              type="button" title="Toggle Edit Mode — enables pin management and route drawing">
+        <i class="fas fa-edit"></i> Edit {{#if editMode}}ON{{else}}OFF{{/if}}
+      </button>
+      {{#if editMode}}
+        <button class="kctg-map-set-bg kctg-btn kctg-btn-outline kctg-btn-sm" type="button">
+          <i class="fas fa-image"></i> Set BG
+        </button>
+        {{#if hasBackground}}
+          <button class="kctg-map-clear-bg kctg-btn kctg-btn-danger kctg-btn-sm" type="button" title="Remove background image">
+            <i class="fas fa-times"></i>
+          </button>
+        {{/if}}
+        <div class="kctg-toolbar-sep"></div>
+        <button class="kctg-map-toggle-place kctg-btn kctg-btn-sm {{#if placeMode}}kctg-btn-gold{{else}}kctg-btn-outline{{/if}}"
+                type="button" title="Click to enable, then click the map to place one location">
+          <i class="fas fa-map-marker-alt"></i> {{#if placeMode}}Click to place…{{else}}Place Pin{{/if}}
+        </button>
+        <button class="kctg-map-toggle-route kctg-btn kctg-btn-sm {{#if routeMode}}kctg-btn-gold{{else}}kctg-btn-outline{{/if}}"
+                type="button" title="Click to enable, then click two pins to draw a route between them">
+          <i class="fas fa-route"></i> {{#if routeMode}}{{#if pendingFrom}}Click 2nd pin…{{else}}Click pin…{{/if}}{{else}}Place Route{{/if}}
+        </button>
+        <button class="kctg-map-toggle-wp kctg-btn kctg-btn-sm {{#if waypointMode}}kctg-btn-gold{{else}}kctg-btn-outline{{/if}}"
+                type="button" title="Toggle nodes on the route, that can be edited. Click to add, right-click to remove, drag to reposition.">
+          <i class="fas fa-bezier-curve"></i> {{#if waypointMode}}Place WP…{{else}}Place WP{{/if}}
+        </button>
+        {{#if routeMode}}
+          {{#if pendingFrom}}
+            <span class="kctg-map-hint" style="color:var(--kctg-gold)">
+              <i class="fas fa-route"></i> Click a second pin · same pin to cancel
+            </span>
+          {{else}}
+            <span class="kctg-map-hint">Click a pin to start a route · double-click to edit</span>
+          {{/if}}
+        {{else}}
+          <span class="kctg-map-hint">Double-click a pin to edit</span>
+        {{/if}}
+      {{/if}}
+    {{/if}}
+    {{#if isGM}}
+      <button class="kctg-map-set-view kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="Save current pan/zoom as reset point">
+        <i class="fas fa-bookmark"></i> {{#if hasSavedView}}Resave View{{else}}Set View{{/if}}
+      </button>
+    {{/if}}
+    <button class="kctg-map-reset-pan kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="{{#if hasSavedView}}Return to saved view{{else}}Reset map position and zoom{{/if}}">
+      <i class="fas fa-compress-arrows-alt"></i>
+    </button>
+    <div class="kctg-zoom-controls">
+      <button class="kctg-zoom-out kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="Zoom out">−</button>
+      <span class="kctg-zoom-label">100%</span>
+      <button class="kctg-zoom-in  kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="Zoom in">+</button>
+    </div>
+  </div>
+
+  {{!-- Map viewport (clips content, handles mouse events) --}}
+  <div class="kctg-map-area">
+
+    {{!-- Inner canvas — this element gets the transform for panning --}}
+    <div class="kctg-map-canvas">
+
+      {{!-- SVG route lines (curved quadratic bezier paths) --}}
+      <svg class="kctg-map-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          {{#each routes}}
+          <linearGradient id="{{gradId}}" data-route-id="{{id}}" gradientUnits="userSpaceOnUse"
+                          x1="{{x1pct}}" y1="{{y1pct}}" x2="{{x2pct}}" y2="{{y2pct}}">
+            <stop offset="0%"   stop-color="{{fromColor}}" />
+            <stop offset="100%" stop-color="{{toColor}}" />
+          </linearGradient>
+          {{/each}}
+        </defs>
+        {{#each routes}}
+        <g>
+          {{#if ../editMode}}
+          <path class="kctg-route-hitzone" d="{{pathD}}" fill="none" stroke="transparent" stroke-width="3" data-route-id="{{id}}" />
+          {{/if}}
+          <path class="kctg-route-line {{#if isActive}}kctg-route-active{{/if}}"
+                d="{{pathD}}" stroke="url(#{{gradId}})" stroke-width="0.5" fill="none"
+                stroke-dasharray="2 1.2" opacity="1" data-route-id="{{id}}" />
+        </g>
+        {{/each}}
+      </svg>
+
+      {{!-- Location pins — double-click opens edit dialog in edit mode --}}
+      {{#each locations}}
+      <div class="kctg-map-pin {{#if ../editMode}}kctg-pin-edit{{/if}} {{#if (eq id ../pendingFrom)}}kctg-pin-pending{{/if}} {{#if (eq id ../homeLocationId)}}kctg-pin-home{{/if}}"
+           data-id="{{id}}" style="left:{{xPct}}%;top:{{yPct}}%;{{pinStyle}}">
+        <div class="kctg-pin-img-wrap">
+          <img src="{{icon}}" alt="{{name}}" onerror="this.src='icons/svg/village.svg'" />
+          {{#if tintColor}}<span class="kctg-pin-tint" style="background:{{tintColor}};"></span>{{/if}}
+        </div>
+        <span class="kctg-pin-label">{{name}}</span>
+      </div>
+      {{/each}}
+
+      {{!-- Waypoint handles (HTML divs so they stay circular at any aspect ratio) --}}
+      {{#if editMode}}
+      {{#each routes}}{{#each wpHandles}}
+      <div class="kctg-wp-handle" data-route-id="{{../id}}" data-wp-idx="{{idx}}"
+           style="left:{{x}}%;top:{{y}}%;"></div>
+      {{/each}}{{/each}}
+      {{/if}}
+
+      {{!-- Traveling workers --}}
+      {{#each travelingWorkers}}
+      <div class="kctg-traveler kctg-traveler-{{phase}}"
+           data-phase="{{phase}}"
+           data-from-x="{{fromXPct}}" data-from-y="{{fromYPct}}"
+           data-to-x="{{toXPct}}"   data-to-y="{{toYPct}}"
+           data-start-progress="{{startProgress}}"
+           data-pts="{{ptsStr}}"
+           style="left:{{xPct}}%;top:{{yPct}}%;"
+           title="{{name}} — {{taskName}} ({{phase}})">
+        <img src="{{img}}" alt="{{name}}" onerror="this.src='icons/svg/mystery-man.svg'" />
+        <span class="kctg-traveler-badge"><i class="fas fa-route"></i></span>
+      </div>
+      {{/each}}
+
+      {{!-- Empty hint --}}
+      {{#unless hasBackground}}
+      <div class="kctg-map-empty-hint">
+        {{#if isGM}}
+          <i class="fas fa-image"></i> Click <em>Set BG</em> to add a map image
+        {{else}}
+          <i class="fas fa-map"></i> Trade map not configured yet
+        {{/if}}
+      </div>
+      {{/unless}}
+
+    </div>{{!-- .kctg-map-canvas --}}
+  </div>{{!-- .kctg-map-area --}}
+
+  {{!-- Route list panel (GM only) --}}
+  {{#if isGM}}{{#if routes.length}}
+  <div class="kctg-route-panel">
+    <div class="kctg-panel-header"><i class="fas fa-route"></i> Routes</div>
+    {{#each routes}}
+    <div class="kctg-route-list-row">
+      <i class="fas fa-arrows-alt-h" style="color:{{color}};font-size:0.7rem;"></i>
+      <span style="flex:1;font-size:0.8rem;color:var(--kctg-text-dim);">{{name}}</span>
+      <label style="font-size:0.68rem;color:var(--kctg-gold-dim);white-space:nowrap;" title="Preset travel days for tasks using this route"><i class="fas fa-clock"></i></label>
+      <input class="kctg-route-travel-days kctg-input-qty kctg-route-days-input" type="number" min="1"
+             value="{{travelDays}}" data-id="{{id}}"
+             title="Travel days (preset for tasks)" />
+      <button class="kctg-route-delete kctg-btn kctg-btn-sm kctg-btn-danger"
+              data-id="{{id}}" type="button" title="Delete route"><i class="fas fa-times"></i></button>
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}{{/if}}
+
+</div>

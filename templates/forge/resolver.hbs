@@ -1,0 +1,47 @@
+<div class="kctg-app kctg-resolver-inner">
+  <p class="kctg-resolver-intro">
+    <i class="fas fa-search"></i>
+    Some items couldn't be resolved automatically.
+    Select the correct compendium entry for each, or leave it blank to import without a UUID and fix it later.
+  </p>
+
+  <table class="kctg-resolver-table">
+    <thead>
+      <tr>
+        <th>Item Name</th>
+        <th>Compendium Match</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each rows}}
+        <tr>
+          <td class="kctg-res-name">{{name}}</td>
+          <td>
+            {{#if notFound}}
+              <span class="kctg-res-notfound">
+                <i class="fas fa-exclamation-triangle"></i>
+                Not found — will be imported without a UUID
+              </span>
+            {{else}}
+              <select class="kctg-res-select" data-item-name="{{name}}">
+                <option value="">— Skip / fix later —</option>
+                {{#each candidates}}
+                  <option value="{{uuid}}">{{name}} — {{source}}</option>
+                {{/each}}
+              </select>
+            {{/if}}
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="kctg-resolver-footer">
+    <button class="kctg-btn kctg-btn-outline kctg-resolver-cancel" type="button">
+      <i class="fas fa-times"></i> Cancel
+    </button>
+    <button class="kctg-btn kctg-btn-gold kctg-resolver-import" type="button">
+      <i class="fas fa-file-import"></i> Import
+    </button>
+  </div>
+</div>

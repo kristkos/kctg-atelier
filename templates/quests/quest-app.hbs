@@ -1,0 +1,358 @@
+<div class="kctg-app kctg-quest-inner">
+
+  {{!-- ════ TAB BAR ════ --}}
+  <div class="kctg-tab-bar">
+    <button class="kctg-tab-btn kctg-tab-active" data-tab="quests" type="button">
+      <i class="fas fa-scroll"></i><span class="kctg-tab-label"> Quests</span>
+    </button>
+  </div>
+
+  {{!-- ════ TAB CONTENT (background scoped here) ════ --}}
+  <div class="kctg-tab-content">
+
+  {{!-- ════ QUESTS TAB ════ --}}
+  {{#if true}}{{!-- quests tab always active --}}
+  <div class="kctg-quest-layout">
+
+    <div class="kctg-quest-list-panel">
+
+      <div class="kctg-q-toolbar">
+        {{#if isGM}}
+          <button class="kctg-q-new-btn kctg-btn kctg-btn-gold kctg-btn-sm" type="button" title="New Quest">
+            <i class="fas fa-plus"></i> Quest
+          </button>
+          <button class="kctg-q-new-group-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button" title="New Group">
+            <i class="fas fa-folder-plus"></i>
+          </button>
+        {{/if}}
+        <div class="kctg-q-filter-group">
+          <button class="kctg-q-filter-btn {{#if (eq filter 'all')}}kctg-active{{/if}}" data-filter="all" type="button">All</button>
+          <button class="kctg-q-filter-btn {{#if (eq filter 'in-progress')}}kctg-active{{/if}}" data-filter="in-progress" type="button" title="In Progress"><i class="fas fa-spinner fa-xs"></i></button>
+          <button class="kctg-q-filter-btn {{#if (eq filter 'completed')}}kctg-active{{/if}}" data-filter="completed" type="button" title="Completed"><i class="fas fa-check-circle fa-xs"></i></button>
+          <button class="kctg-q-filter-btn {{#if (eq filter 'failed')}}kctg-active{{/if}}" data-filter="failed" type="button" title="Failed"><i class="fas fa-times-circle fa-xs"></i></button>
+          {{#if isGM}}
+            <button class="kctg-q-filter-btn {{#if (eq filter 'hidden')}}kctg-active{{/if}}" data-filter="hidden" type="button" title="Hidden (GM only)"><i class="fas fa-eye-slash fa-xs"></i></button>
+          {{/if}}
+        </div>
+      </div>
+
+      <ul class="kctg-quest-list">
+        {{#each listItems}}
+          {{#if isGroup}}
+            {{#if isGM}}
+              {{!-- GM: compact single-row section header --}}
+              <li class="kctg-group-row" data-id="{{id}}"
+                  style="--group-color:{{#if color}}{{color}}{{else}}var(--kctg-russet){{/if}}" title="Right-click to edit">
+                <div class="kctg-group-main" title="Click to collapse / expand">
+                  <i class="fas {{#if collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} kctg-group-chevron"></i>
+                  <span class="kctg-group-name">{{name}}</span>
+                  <span class="kctg-group-line"></span>
+                  <span class="kctg-group-count">{{questCount}}</span>
+                </div>
+              </li>
+            {{else}}
+              {{!-- Player: same compact row, no controls --}}
+              <li class="kctg-group-row" data-id="{{id}}"
+                  style="--group-color:{{#if color}}{{color}}{{else}}var(--kctg-russet){{/if}}">
+                <div class="kctg-group-main" title="Click to collapse / expand">
+                  <i class="fas {{#if collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} kctg-group-chevron"></i>
+                  <span class="kctg-group-name">{{name}}</span>
+                  <span class="kctg-group-line"></span>
+                  <span class="kctg-group-count">{{questCount}}</span>
+                </div>
+              </li>
+            {{/if}}
+          {{else}}
+            <li class="kctg-quest-row kctg-quest-status-{{status}} {{#if inGroup}}kctg-quest-indented{{/if}} {{#if (eq id ../selectedId)}}kctg-selected{{/if}} {{#if isUnread}}kctg-quest-unread{{/if}}" data-id="{{id}}">
+              {{#if isUnread}}<span class="kctg-unread-dot" title="New / updated"></span>{{/if}}
+              <span class="kctg-q-list-name">{{name}}</span>
+              {{#unless (eq status 'in-progress')}}
+                <button class="kctg-q-status-cycle kctg-q-status-badge kctg-status-{{status}}" data-id="{{id}}" type="button" title="Cycle status">
+                  <i class="{{statusIcon}}"></i>
+                </button>
+              {{/unless}}
+            </li>
+          {{/if}}
+        {{else}}
+          <li class="kctg-empty-state kctg-empty-sm"><p>No quests found.</p></li>
+        {{/each}}
+      </ul>
+
+    </div>{{!-- end list panel --}}
+
+    <div class="kctg-resize-handle" title="Drag to resize"></div>
+
+    <div class="kctg-quest-detail">
+      {{#if selected}}
+
+        {{!-- Art background: first quest giver's portrait fades in from the top-right --}}
+        {{#if selected.givers.length}}
+          <div class="kctg-q-art-layer" style="background-image:url('{{selected.givers.[0].img}}')"></div>
+        {{/if}}
+
+        <div class="kctg-q-topbar">
+          <div class="kctg-q-topbar-left">
+            {{#if editMode}}
+              <select class="kctg-q-status-select kctg-select kctg-select-sm">
+                <option value="in-progress" {{#if (eq selected.status 'in-progress')}}selected{{/if}}>In Progress</option>
+                <option value="completed"   {{#if (eq selected.status 'completed')}}selected{{/if}}>Completed</option>
+                <option value="failed"      {{#if (eq selected.status 'failed')}}selected{{/if}}>Failed</option>
+                {{#if isGM}}<option value="hidden" {{#if (eq selected.status 'hidden')}}selected{{/if}}>Hidden</option>{{/if}}
+              </select>
+              <select class="kctg-q-vis-select kctg-select kctg-select-sm">
+                <option value="world"    {{#if (eq selected.visibility 'world')}}selected{{/if}}>World</option>
+                <option value="party"    {{#if (eq selected.visibility 'party')}}selected{{/if}}>Party</option>
+                <option value="personal" {{#if (eq selected.visibility 'personal')}}selected{{/if}}>Personal</option>
+              </select>
+              <select class="kctg-q-group-select kctg-select kctg-select-sm">
+                {{#each groupOptions}}
+                  <option value="{{id}}" {{#if (eq id ../selected.groupId)}}selected{{/if}}>{{name}}</option>
+                {{/each}}
+              </select>
+            {{else}}
+              <span class="kctg-q-status-badge kctg-status-{{selected.status}}">
+                <i class="{{selected.statusIcon}}"></i> {{selected.statusLabel}}
+              </span>
+              <span class="kctg-q-vis-badge"><i class="fas fa-{{selected.visIcon}}"></i> {{selected.visibility}}</span>
+            {{/if}}
+          </div>
+          <div class="kctg-q-topbar-actions">
+            {{#if canEdit}}
+              <button class="kctg-q-edit-btn kctg-btn kctg-btn-outline kctg-btn-sm" type="button">
+                {{#if editMode}}<i class="fas fa-check"></i> Done{{else}}<i class="fas fa-pencil-alt"></i> Edit{{/if}}
+              </button>
+            {{/if}}
+            {{#if isGM}}
+              <button class="kctg-q-delete-btn kctg-btn kctg-btn-danger kctg-btn-sm" type="button"><i class="fas fa-times"></i></button>
+            {{/if}}
+          </div>
+        </div>
+
+        <div class="kctg-quest-detail-scroll">
+
+          <div class="kctg-q-title-block kctg-centered">
+            {{#if editMode}}
+              <input class="kctg-q-name-input kctg-input kctg-input-title kctg-centered-input" type="text" value="{{selected.name}}" placeholder="Quest name" />
+            {{else}}
+              <h2 class="kctg-q-detail-name"><span class="kctg-title-label">{{selected.name}}</span></h2>
+            {{/if}}
+          </div>
+
+          {{#if selected.img}}
+            <div class="kctg-q-img-block kctg-centered">
+              <div class="kctg-q-img-wrap">
+                <img class="kctg-q-detail-img kctg-img-clickable" src="{{selected.img}}" alt="{{selected.name}}" onerror="this.style.display='none'" title="Click to expand" />
+                {{#if editMode}}
+                  <div class="kctg-q-img-controls">
+                    <button class="kctg-q-img-pick kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Change image"><i class="fas fa-camera"></i></button>
+                    <button class="kctg-q-img-clear kctg-btn kctg-btn-xs kctg-btn-danger" type="button" title="Remove image"><i class="fas fa-times"></i></button>
+                  </div>
+                {{/if}}
+              </div>
+            </div>
+          {{else}}
+            {{#if editMode}}
+              <div class="kctg-q-img-block kctg-centered">
+                <button class="kctg-q-img-pick kctg-btn kctg-btn-outline kctg-btn-sm" type="button"><i class="fas fa-camera"></i> Set Image</button>
+              </div>
+            {{/if}}
+          {{/if}}
+
+          <div class="kctg-q-section kctg-q-desc-section">
+            {{#if editMode}}
+              <div class="kctg-desc-pm-wrap"></div>
+            {{else}}
+              {{#if enrichedDescription}}
+                <div class="kctg-q-desc-text">{{{enrichedDescription}}}</div>
+              {{else}}
+                <p class="kctg-subtle kctg-italic">No description.</p>
+              {{/if}}
+            {{/if}}
+          </div>
+
+          <div class="kctg-q-section kctg-q-objectives-full">
+            <div class="kctg-panel-header">
+              <span><i class="fas fa-tasks"></i> Objectives</span>
+              {{#if editMode}}<button class="kctg-q-add-obj kctg-btn kctg-btn-xs kctg-btn-gold" type="button"><i class="fas fa-plus"></i></button>{{/if}}
+            </div>
+            {{#if selected.objectiveTree.length}}
+              <ul class="kctg-objective-list">
+                {{#each selected.objectiveTree}}
+                  <li class="kctg-objective-item kctg-status-{{status}} {{#if highlighted}}kctg-obj-highlighted{{/if}}">
+                    <button class="kctg-obj-cycle kctg-btn-icon" data-id="{{id}}" type="button" title="Cycle status"><i class="{{statusIcon}}"></i></button>
+                    {{#if ../editMode}}
+                      <input class="kctg-obj-name-input kctg-input kctg-input-sub" type="text" value="{{name}}" data-id="{{id}}" placeholder="Objective text" />
+                      <select class="kctg-obj-trigger kctg-select kctg-select-xs" data-id="{{id}}" title="Triggers quest on completion">
+                        {{#each ../allQuestOptions}}<option value="{{id}}" {{#if (eq id ../triggersQuestId)}}selected{{/if}}>{{name}}</option>{{/each}}
+                      </select>
+                      {{#if ../isGM}}
+                        <button class="kctg-obj-highlight-btn kctg-btn-icon {{#if highlighted}}kctg-is-highlighted{{/if}}" data-id="{{id}}" type="button" title="{{#if highlighted}}Remove highlight{{else}}Highlight{{/if}}">
+                          <i class="{{#if highlighted}}fas{{else}}far{{/if}} fa-star"></i>
+                        </button>
+                        <button class="kctg-obj-hide kctg-btn-icon kctg-hide-toggle {{#if hidden}}kctg-is-hidden{{/if}}" data-id="{{id}}" type="button" title="{{#if hidden}}Reveal to players{{else}}Hide from players{{/if}}">
+                          <i class="fas {{#if hidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i>
+                        </button>
+                      {{/if}}
+                      <button class="kctg-q-add-sub-obj kctg-btn kctg-btn-xs kctg-btn-outline" data-parent-id="{{id}}" type="button" title="Add sub-objective"><i class="fas fa-indent"></i></button>
+                      <button class="kctg-obj-remove kctg-btn kctg-btn-xs kctg-btn-danger" data-id="{{id}}" type="button">×</button>
+                    {{else}}
+                      <span class="kctg-obj-name {{#if highlighted}}kctg-obj-blue{{/if}} {{#if (eq status 'completed')}}kctg-strikethrough{{/if}} {{#if (eq status 'failed')}}kctg-failed-text{{/if}}">{{name}}</span>
+                      {{#if triggersQuestId}}<span class="kctg-obj-chain-badge" title="Unlocks a quest on completion"><i class="fas fa-link"></i></span>{{/if}}
+                      {{#if ../isGM}}{{#if hidden}}<span class="kctg-obj-chain-badge kctg-hidden-badge" title="Hidden from players"><i class="fas fa-eye-slash"></i></span>{{/if}}{{/if}}
+                    {{/if}}
+                  </li>
+                  {{#if subObjectives.length}}
+                    <ul class="kctg-sub-objective-list">
+                      {{#each subObjectives}}
+                        <li class="kctg-objective-item kctg-objective-sub kctg-status-{{status}}">
+                          <button class="kctg-obj-cycle kctg-btn-icon" data-id="{{id}}" type="button" title="Cycle status"><i class="{{statusIcon}}"></i></button>
+                          {{#if ../../editMode}}
+                            <input class="kctg-obj-name-input kctg-input kctg-input-sub" type="text" value="{{name}}" data-id="{{id}}" placeholder="Sub-objective" />
+                            {{#if ../../isGM}}
+                              <button class="kctg-obj-hide kctg-btn-icon kctg-hide-toggle {{#if hidden}}kctg-is-hidden{{/if}}" data-id="{{id}}" type="button" title="{{#if hidden}}Reveal{{else}}Hide{{/if}}"><i class="fas {{#if hidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i></button>
+                            {{/if}}
+                            <button class="kctg-obj-remove kctg-btn kctg-btn-xs kctg-btn-danger" data-id="{{id}}" type="button">×</button>
+                          {{else}}
+                            <span class="kctg-obj-name {{#if (eq status 'completed')}}kctg-strikethrough{{/if}} {{#if (eq status 'failed')}}kctg-failed-text{{/if}}">{{name}}</span>
+                            {{#if ../../isGM}}{{#if hidden}}<span class="kctg-obj-chain-badge kctg-hidden-badge" title="Hidden from players"><i class="fas fa-eye-slash"></i></span>{{/if}}{{/if}}
+                          {{/if}}
+                        </li>
+                      {{/each}}
+                    </ul>
+                  {{/if}}
+                {{/each}}
+              </ul>
+            {{else}}
+              <p class="kctg-subtle">No objectives yet.{{#if editMode}} Click <i class="fas fa-plus"></i> to add.{{/if}}</p>
+            {{/if}}
+          </div>
+
+          <div class="kctg-q-three-col">
+
+            <div class="kctg-q-section kctg-q-col3">
+              <div class="kctg-panel-header">
+                <span><i class="fas fa-coins"></i> Rewards</span>
+                {{#unless editMode}}{{#if isGM}}
+                  <button class="kctg-reward-send-btn kctg-btn kctg-btn-xs kctg-btn-outline" type="button" title="Send item rewards to an actor"><i class="fas fa-gift"></i> Send</button>
+                {{/if}}{{/unless}}
+              </div>
+              {{#if enrichedRewards.length}}
+                <ul class="kctg-reward-list">
+                  {{#each enrichedRewards}}
+                    <li class="kctg-reward-row">
+                      {{#if (eq type 'item')}}
+                        <img class="kctg-item-img" src="{{img}}" alt="{{resolvedName}}" />
+                        <span class="kctg-item-name">{{resolvedName}}</span>
+                        {{#if ../editMode}}<input class="kctg-q-reward-qty kctg-input-qty" type="number" min="1" value="{{qty}}" data-id="{{id}}" />
+                        {{else}}<span class="kctg-item-qty">×{{qty}}</span>{{/if}}
+                      {{else}}
+                        <i class="fas fa-coins kctg-text-gold"></i>
+                        {{#if ../editMode}}<input class="kctg-q-reward-text kctg-input" type="text" value="{{text}}" data-id="{{id}}" placeholder="Reward description" style="flex:1;" />
+                        {{else}}<span class="kctg-reward-text">{{text}}</span>{{/if}}
+                      {{/if}}
+                      {{#if ../editMode}}
+                        {{#if ../isGM}}
+                          <button class="kctg-reward-hide kctg-btn-icon kctg-hide-toggle {{#if hidden}}kctg-is-hidden{{/if}}" data-id="{{id}}" type="button" title="{{#if hidden}}Reveal to players{{else}}Hide from players{{/if}}"><i class="fas {{#if hidden}}fa-eye-slash{{else}}fa-eye{{/if}}"></i></button>
+                        {{/if}}
+                        <button class="kctg-q-remove-reward kctg-btn kctg-btn-xs kctg-btn-danger" data-id="{{id}}" type="button">×</button>
+                      {{else}}
+                        {{#if ../isGM}}{{#if hidden}}<span class="kctg-obj-chain-badge kctg-hidden-badge" title="Hidden from players"><i class="fas fa-eye-slash"></i></span>{{/if}}{{/if}}
+                      {{/if}}
+                    </li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                <p class="kctg-subtle">No rewards assigned.</p>
+              {{/if}}
+              {{#if editMode}}
+                <div class="kctg-q-reward-actions">
+                  <div class="kctg-q-reward-drop kctg-drop-zone"><i class="fas fa-plus-circle"></i> Drop item here</div>
+                  <button class="kctg-q-add-text-reward kctg-btn kctg-btn-outline kctg-btn-sm" type="button"><i class="fas fa-font"></i> Text</button>
+                </div>
+              {{/if}}
+            </div>
+
+            <div class="kctg-q-section kctg-q-col3">
+              <div class="kctg-panel-header"><i class="fas fa-person"></i> Quest Givers</div>
+              {{#if selected.givers.length}}
+                <ul class="kctg-giver-list">
+                  {{#each selected.givers}}
+                    <li class="kctg-giver-row">
+                      <img class="kctg-q-giver-img" src="{{img}}" alt="{{name}}" onerror="this.src='icons/svg/mystery-man.svg'" />
+                      <span class="kctg-q-giver-name">{{name}}</span>
+                      {{#if ../editMode}}<button class="kctg-q-remove-giver kctg-btn-icon kctg-danger-icon" data-id="{{id}}" type="button" title="Remove"><i class="fas fa-times"></i></button>{{/if}}
+                    </li>
+                  {{/each}}
+                </ul>
+              {{else}}
+                {{#unless editMode}}<p class="kctg-subtle">No quest givers assigned.</p>{{/unless}}
+              {{/if}}
+              {{#if editMode}}<div class="kctg-q-giver-drop kctg-drop-zone" title="Drag an Actor here"><i class="fas fa-person-circle-plus"></i> Drop Actor here</div>{{/if}}
+            </div>
+
+            <div class="kctg-q-section kctg-q-col3">
+              {{#if isGM}}{{#if (eq selected.visibility 'personal')}}
+                <div class="kctg-panel-header"><i class="fas fa-user-lock"></i> Quest Owners</div>
+                <p class="kctg-subtle kctg-owner-hint">Only these players can see this quest.</p>
+                <div class="kctg-owner-list">
+                  {{#each allUsers}}
+                    <label class="kctg-owner-row">
+                      <input class="kctg-q-owner-toggle" type="checkbox" value="{{id}}" {{#if isOwner}}checked{{/if}} />
+                      <span>{{name}}</span>
+                    </label>
+                  {{else}}
+                    <p class="kctg-subtle">No non-GM players found.</p>
+                  {{/each}}
+                </div>
+              {{/if}}{{/if}}
+            </div>
+
+          </div>
+
+          {{!-- ════ QUEST ANNOUNCEMENT (edit mode) ════ --}}
+          {{#if editMode}}
+          <div class="kctg-q-section kctg-q-announce-section">
+            <div class="kctg-panel-header"><span><i class="fas fa-comment-dots"></i> Quest Announcement</span></div>
+            <p class="kctg-subtle kctg-announce-hint">An in-character line spoken by the quest giver (or a chosen speaker). Posted to chat when you click Done, if the box below is ticked. Leave the message blank to disable.</p>
+            <div class="kctg-q-announce-row">
+              <div class="kctg-q-announce-speaker kctg-drop-zone" title="Drop an Actor to speak the line">
+                {{#if announce.speaker}}
+                  <img class="kctg-q-announce-img" src="{{announce.speaker.img}}" alt="{{announce.speaker.name}}" onerror="this.src='icons/svg/mystery-man.svg'" />
+                  <span class="kctg-q-announce-name">{{announce.speaker.name}}</span>
+                  {{#if announce.speaker.isOverride}}
+                    <button class="kctg-q-announce-clear kctg-btn-icon kctg-danger-icon" type="button" title="Clear (fall back to the quest giver)"><i class="fas fa-times"></i></button>
+                  {{else}}
+                    <span class="kctg-q-announce-default" title="Defaulting to the first quest giver. Drop an actor to override.">giver</span>
+                  {{/if}}
+                {{else}}
+                  <i class="fas fa-user-plus kctg-dim"></i>
+                  <span class="kctg-hint kctg-dim">Drop speaker</span>
+                {{/if}}
+              </div>
+              <input class="kctg-q-announce-text kctg-input" type="text" value="{{announce.text}}" placeholder="“The deed is done. You have my thanks.”" />
+            </div>
+            <label class="kctg-q-announce-toggle">
+              <input class="kctg-q-announce-onsave" type="checkbox" {{#if announce.onSave}}checked{{/if}} />
+              <span>Send to chat each time I click Done</span>
+            </label>
+          </div>
+          {{/if}}
+
+        </div>{{!-- end detail-scroll --}}
+
+      {{else}}
+        <div class="kctg-empty-state">
+          <i class="fas fa-book-open kctg-empty-icon"></i>
+          <p>Select a quest to view it.</p>
+          {{#if isGM}}<p class="kctg-subtle">Click <strong>+ Quest</strong> to create a new one.</p>{{/if}}
+        </div>
+      {{/if}}
+
+    </div>{{!-- end right panel --}}
+
+  </div>{{!-- end quest layout --}}
+  {{/if}}{{!-- end quests tab --}}
+
+  </div>{{!-- end kctg-tab-content --}}
+
+</div>

@@ -1,0 +1,52 @@
+<div class="kctg-app kctg-msg-templates-inner">
+
+  <div class="kctg-tab-bar">
+    <button class="kctg-tab-btn {{#if (eq tab 'forge')}}kctg-tab-active{{/if}}"   data-tab="forge"  type="button"><i class="fas fa-fire"></i> Forge</button>
+    <button class="kctg-tab-btn {{#if (eq tab 'forage')}}kctg-tab-active{{/if}}" data-tab="forage" type="button"><i class="fas fa-leaf"></i> Forage</button>
+    <button class="kctg-tab-btn {{#if (eq tab 'trade')}}kctg-tab-active{{/if}}"  data-tab="trade"  type="button"><i class="fas fa-route"></i> Trade</button>
+    <button class="kctg-tab-btn {{#if (eq tab 'patrol')}}kctg-tab-active{{/if}}" data-tab="patrol" type="button"><i class="fas fa-shield-alt"></i> Patrol</button>
+    <button class="kctg-tab-btn {{#if (eq tab 'scout')}}kctg-tab-active{{/if}}"  data-tab="scout"  type="button"><i class="fas fa-binoculars"></i> Scout</button>
+    <button class="kctg-tab-btn {{#if (eq tab 'orders')}}kctg-tab-active{{/if}}" data-tab="orders" type="button"><i class="fas fa-handshake"></i> Orders</button>
+  </div>
+
+  <p class="kctg-hint" style="padding:6px 12px 0;font-size:.78rem;">
+    {{#if (eq tab 'forge')}}
+      One template picked at random on craft. Tokens: <code>{actor}</code> <code>{recipe}</code> <code>{ingredients}</code> <code>{results}</code>
+    {{else if (eq tab 'orders')}}
+      One template picked at random when a trade order is force-completed. Tokens: <code>{actor}</code> <code>{order}</code> <code>{city}</code> <code>{payment}</code>
+    {{else}}
+      One template picked at random on task completion. Tokens: <code>{task}</code> &nbsp;<code>{workers}</code>
+    {{/if}}
+  </p>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;">
+    <span class="kctg-label" style="font-size:.78rem;">
+      {{#if (eq tab 'forge')}}Forge Craft Messages
+      {{else if (eq tab 'forage')}}Forage Completion Titles
+      {{else if (eq tab 'trade')}}Trade Run Completion Titles
+      {{else if (eq tab 'patrol')}}Patrol Completion Titles
+      {{else if (eq tab 'orders')}}Forced Order Completion Messages
+      {{else}}Scout Completion Titles{{/if}}
+    </span>
+    <div style="display:flex;gap:6px;">
+      <button class="kctg-mt-reset kctg-btn kctg-btn-sm kctg-btn-outline" type="button">Reset Defaults</button>
+      <button class="kctg-mt-add   kctg-btn kctg-btn-sm kctg-btn-gold"    type="button"><i class="fas fa-plus"></i> Add</button>
+    </div>
+  </div>
+
+  {{#if templates.length}}
+    <ul class="kctg-mt-list" style="list-style:none;padding:4px 12px 8px;margin:0;display:flex;flex-direction:column;gap:6px;">
+      {{#each templates}}
+        <li style="display:flex;align-items:flex-start;gap:6px;">
+          <textarea class="kctg-mt-input kctg-input kctg-textarea" data-idx="{{idx}}" rows="2" style="flex:1;resize:vertical;">{{text}}</textarea>
+          <button class="kctg-mt-delete kctg-btn kctg-btn-danger kctg-btn-xs" data-idx="{{idx}}" type="button" title="Remove" style="flex-shrink:0;margin-top:4px;"><i class="fas fa-times"></i></button>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <div class="kctg-empty-state">
+      <p>No templates. Click <strong>Add</strong> to write one, or <strong>Reset Defaults</strong> to restore the built-in set.</p>
+    </div>
+  {{/if}}
+
+</div>

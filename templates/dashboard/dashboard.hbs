@@ -1,0 +1,107 @@
+<div class="kctg-app kctg-dashboard-inner">
+
+  <div class="kctg-dash-header">
+    <span class="kctg-label">Campaign</span>
+    <div style="display:flex;gap:4px;align-items:center;">
+      {{#if isGM}}
+      <button class="kctg-dash-export kctg-btn-icon" type="button" title="Export campaign data (settings, user data, merchant setups) to a JSON backup">
+        <i class="fas fa-file-export"></i>
+      </button>
+      <button class="kctg-dash-import kctg-btn-icon" type="button" title="Import campaign data from a JSON backup (overwrites current data)">
+        <i class="fas fa-file-import"></i>
+      </button>
+      <button class="kctg-dash-messages kctg-btn-icon" type="button" title="Message Templates">
+        <i class="fas fa-comment-alt"></i>
+      </button>
+      {{/if}}
+      <button class="kctg-dash-refresh kctg-btn-icon" type="button" title="Refresh stats">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  {{#if worldDate}}
+  <div class="kctg-dash-date">{{worldDate}}</div>
+  {{/if}}
+
+  <div class="kctg-dash-rows">
+
+    {{!-- Quests --}}
+    <button class="kctg-dash-row kctg-dash-quests" type="button">
+      <span class="kctg-dash-name">Quests</span>
+      <span class="kctg-dash-stats">
+        <strong style="color:var(--kctg-amber);">{{quests.active}}</strong> active
+        <span class="kctg-dash-dot">·</span>
+        <strong style="color:var(--kctg-success);">{{quests.completed}}</strong> done
+        <span class="kctg-dash-dot">·</span>
+        {{quests.total}} total
+      </span>
+      <i class="fas fa-chevron-right kctg-dash-chevron"></i>
+    </button>
+
+    {{!-- Merchants --}}
+    <button class="kctg-dash-row kctg-dash-merchants" type="button">
+      <span class="kctg-dash-name">Merchants</span>
+      <span class="kctg-dash-stats">
+        <strong style="color:var(--kctg-success);">{{merchants.open}}</strong> open
+        <span class="kctg-dash-dot">·</span>
+        {{merchants.total}} configured
+      </span>
+      <i class="fas fa-chevron-right kctg-dash-chevron"></i>
+    </button>
+
+    {{#if isGM}}
+
+    {{!-- Workshop --}}
+    <button class="kctg-dash-row kctg-dash-workshop" type="button">
+      <span class="kctg-dash-name">Workshop</span>
+      <span class="kctg-dash-stats">
+        Day <strong style="color:var(--kctg-amber);">{{workshop.day}}</strong>
+        <span class="kctg-dash-dot">·</span>
+        <strong style="color:var(--kctg-amber);">{{workshop.active}}</strong> task{{#unless (kctg_eq workshop.active 1)}}s{{/unless}}
+        <span class="kctg-dash-dot">·</span>
+        {{workshop.workers}} worker{{#unless (kctg_eq workshop.workers 1)}}s{{/unless}}
+      </span>
+      <i class="fas fa-chevron-right kctg-dash-chevron"></i>
+    </button>
+
+    {{!-- Forge --}}
+    <button class="kctg-dash-row kctg-dash-forge" type="button">
+      <span class="kctg-dash-name">Forge</span>
+      <span class="kctg-dash-stats">
+        <strong style="color:var(--kctg-amber);">{{forge.unlocked}}</strong> recipe{{#unless (kctg_eq forge.unlocked 1)}}s{{/unless}}
+        {{#if forge.locked}}
+        <span class="kctg-dash-dot">·</span>
+        <span style="color:var(--kctg-text-muted);">{{forge.locked}} locked</span>
+        {{/if}}
+      </span>
+      <i class="fas fa-chevron-right kctg-dash-chevron"></i>
+    </button>
+
+    {{/if}}
+
+  </div>
+
+  {{#if activity.length}}
+  <div class="kctg-dash-activity">
+    <div class="kctg-dash-activity-header">
+      <span class="kctg-label">Recent Activity</span>
+      {{#if isGM}}
+      <button class="kctg-dash-activity-clear kctg-btn-icon" type="button" title="Clear the activity feed">
+        <i class="fas fa-trash"></i>
+      </button>
+      {{/if}}
+    </div>
+    <ul class="kctg-dash-activity-list">
+      {{#each activity}}
+      <li class="kctg-dash-activity-row">
+        <i class="{{icon}}"></i>
+        <span class="kctg-dash-activity-text">{{text}}</span>
+        <span class="kctg-dash-activity-day">Day {{day}}</span>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+</div>
